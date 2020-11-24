@@ -3,7 +3,7 @@
 
 % rework this method to incorporate all the changes from the paper
 \chapter{Methods}\label{chapter:methods}
-In this section, the active learning algorithms, pre-training methods and training strategies evaluated throughout this thesis are defined. Consider that there exists a labeled subset of the dataset, $\mathcal{L}$, such that $\mathcal{L} = \{(x_1, y_1), (x_2, y_2), (x_3, y_3) ... ((x_N, y_N))\}$ with $|L| = N$, where $x_i$ is a data point and $y_i$ is the corresponding label. Also, a subset $\mathcal{U}$ exists such that $\mathcal{U} = \{u_1, u_2, u_3 ... u_K\}$ with $|U| = K$, where $x_i$ is the unlabeled data point and $K>>N$. By definition, consider $\mathcal{D} = \mathcal{L} \cup \mathcal{U}$, where $\mathcal{D}$ is the whole dataset. The performance of a model can be evaluated using an evaluation metric $\mathcal{M}$. Let us define the model $f^\Theta$ with parameters $\Theta$.
+In this section, the active learning algorithms, pre-training methods and training strategies evaluated throughout this thesis are defined. Consider that there exists a labeled subset of the dataset, $\mathcal{L}$, such that $\mathcal{L} = \{(x_1, y_1), (x_2, y_2), (x_3, y_3) ... ((x_N, y_N))\}$ with $|L| = N$, where $x_i$ is a data point and $y_i$ is the corresponding label. Also, a subset $\mathcal{U}$ exists such that $\mathcal{U} = \{u_1, u_2, u_3 ... u_K\}$ with $|U| = K$, where $x_i$ is the unlabeled data point and $K>>N$. By definition, consider $\mathcal{D} = \mathcal{L} \cup \mathcal{U}$, where $\mathcal{D}$ is the whole dataset. Let us define the model $f^\Theta$ with parameters $\Theta$. The performance of a model can be evaluated using an evaluation metric $\mathcal{M}$.
 
 % keep this for the supervised learning section
 % In a supervised learning setting, the model ($f^\Theta$ with parameters $\Theta$) learns a mapping $\hat{Y} = f^\Theta(\mathcal{L})$ such that the objective function $L = \sum_{i=0}^{N} l(\hat{y_i}, y_i)$ is minimized. 
@@ -12,17 +12,18 @@ In this section, the active learning algorithms, pre-training methods and traini
 \section{Baseline}\label{section:baseline}
 A baseline method acts as a lower bound requirement, which defines a scale for comparing other methods against each other.
 \subsection{Random Sampling}
-Random Sampling is used as a baseline method. During each selection cycle, k data points are selected, such that $\mathcal{S} \subseteq \mathcal{U}$ with $|\mathcal{S}| = k$ and $\forall s \in \mathcal{S}$ chosen arbitrarily. Random Sampling acts as a baseline because all elements of $\mathcal{S}$ are selected randomly without using an underlying selection mechanism. Hence, all methods are expected to perform better than random sampling.
+Random Sampling is used as a baseline method. During each iterations and in each iteration s data points are selected, such that $\mathcal{S} \subseteq \mathcal{U}$ with $|\mathcal{S}| = s$ and $\forall s \in \mathcal{S}$ chosen arbitrarily. Random Sampling acts as a baseline because all elements of $\mathcal{S}$ are selected randomly without using an underlying selection mechanism. Hence, all methods are expected to perform better than random sampling.
 
 \section{Active Learning}\label{section:active_learning}
-The performance of a model can be increased by labeling the data points in the set $\mathcal{U}$, and adding the pairs of data points and their corresponding labels to the set $\mathcal{L}$. The labeling of unlabeled data points is carried out in selection cycles, which constitute selection of k data points $S \subseteq \mathcal{U}$ with $|S| = k$, after the performance of the model converges to a certain value with the current labeled set $\mathcal{L}$. Hereby, the active learning methods, semi-supervised learning methods as well as a baseline method, compared in this thesis are explained further.
+The performance of a model $f^\Theta$ with parameters $\Theta$ can be increased by labeling data points from $\mathcal{U}$ and adding pairs of data points and corresponding labels $(x_i, y_i)$ to $\mathcal{L}$. The labeling of unlabeled data points is carried out in iterations, which consists of the selection of s data points $S \subseteq \mathcal{U}$ with $|S| = s$, after the performance of the model converges with the updated labeled set $\mathcal{L}$. Active learning algorithms aim to select data points in $\mathcal{U}$ for annotation, such that the addition of these images to $\mathcal{L}$ results in a maximum increase in the evaluation metrics $\mathcal{M}$. The main difference between active learning algorithms is how images are chosen for labeling. The algorithms evaluated in this paper are based on model uncertainty $\delta$. The s data points $\mathcal{S} \in \mathcal{U}$ with $|\mathcal{S}| = s$ with the highest uncertainty are selected for labeling in each iteration. In this work, we compare three different active learning algorithms
 
 \subsection{Uncertainty Sampling}
 
 % specify an equation for how top k data points are selected
 % hint: use i as the index
 \subsubsection{Entropy-based Sampling\cite{settles2009}}
-Entropy\cite{shannon1948} $(H)$ is an information theoretic metric, which measures the average amount of information or "bits" required for encoding the distribution of a random variable. Hence, if different outcomes of a random variable have more varied values, then it results in a higher entropy value. Entropy is used as an acquisition function in active learning, to select the k data points $\mathcal{S} \subseteq \mathcal{U}$ with $|\mathcal{S}| = k$ and $|U| = K$, whose predicted outcomes have the highest entropy values, as the model $(f^\Theta)$ is not certain about those predictions. Entropy considers the whole predicted distribution rather than only the highest or k-highest probability outcomes of the model, as in other uncertainty sampling methods such as least-confidence, margin sampling etc.\cite{settles2009}. In discrete terms, entropy-based uncertainty can be calculated as:
+Entropy measures the average amount of information or "bits" required for encoding the distribution of a random variable \cite{shannon1948} $(H)$. If different outcomes of a random variable have more varied values, then it results in a higher entropy value. Here, entropy is used as an criteria for active learning \cite{settles2009} to select the s data points $\mathcal{S} \in \mathcal{U}$, whose predicted outcomes have the highest entropy, assuming that high entropy of predictions mean high model uncertainty $\delta$. By definition, entropy focuses on the whole predicted distribution rather than only on the highest probability outcomes of the model \cite{settles2009}. In discrete terms, entropy-based uncertainty can be calculated as:
+
 \begin{equation}
     \label{equation:entropy_sampling}
     \delta_{i} = - \sum_{c=0}^{C} P_{\Theta}(\hat{y}_i = c|x_i)logP_{\Theta}(\hat{y}_i = c|x_i)
@@ -40,7 +41,7 @@ where,
 % specify the equations in this section according to i th indexes
 % specify an equation for how the top k loss points are selected
 \subsubsection{Learning Loss for Active Learning\cite{yoo2019}}
-In this paper, the authors introduce a simple learning loss prediction module ($f^{\Theta_{loss}}$ with parameters $\Theta_{loss}$), which can be applied to any deep learning network ($f^{\Theta_{target}}$ with parameters $\Theta_{target}$). This method is task agnostic, such as it can be applied to various deep learning tasks such as classification, segmentation etc. The loss prediction module is used as the acquisition function for selecting k data points $\mathcal{S} \subseteq \mathcal{U}$ with $|\mathcal{S}| = k$ and $|U| = K$ with highest predicted loss. \\
+Consider a simple learning loss prediction module $f^{\Theta_{loss}}$ with parameters $\Theta_{loss}$, which can be applied to any deep learning network $f^{\Theta_{target}}$ with parameters $\Theta_{target}$. This method is task agnostic, such as it can be applied to various deep learning tasks such as classification, segmentation etc. The loss prediction module is used for active learning to select s data points $\mathcal{S} \subseteq \mathcal{U}$ with $|\mathcal{S}| = s$ with the highest predicted loss. \\
 The objective function consists of two terms, a supervised loss term and the loss prediction term. For supervised loss, the standard cross entropy loss function\cite{cox1958} is used. The complete objective function formulation is:
 \begin{equation}
     \label{equation:learning_loss_full_loss}
@@ -73,9 +74,9 @@ where,
    \item $\epsilon$ is the predefined positive margin
 \end{itemize}
 
-\subsubsection{Dropout as a Bayesian Approximation: Representing Model Uncertainty in Deep Learning\cite{gal2016}\cite{gal2016phd} (MC dropout)}
-In this paper, the authors derive theory which enables the modeling of uncertainty in neural networks using dropout\cite{srivastava2014}. As a result the uncertainty of neural network can be modeled in a computationally feasible way. \\
-In order to explain the contributions of the authors in this paper, let us briefly explain Bayesian modelling and Variational Inference. Let $\mathcal{L} = \{(x_1, y_1), (x_2, y_2), (x_3, y_3) ... ((x_N, y_N))\}$ with $|L| = N$, be a set of labeled data points. The objective is to find the parameters $\Theta$ of a function $f^\Theta$, which map the inputs to outputs i.e. $\hat{Y} = f^\Theta(\mathcal{L})$. The parameters $\Theta$ can be optimized using techniques such as stochastic gradient descent to obtain a single set of $\Theta$, which in turn gives us a single set of predictions $\hat{Y}$. However, in a Bayesian setting, the model is represented as a distribution over the parameters $\Theta$ and hence a predictive posterior distribution over $\hat{Y}$ is obtained. Marginalization is a fundamental part of Bayesian modelling. The marginal likelihood represents an weighted average over the distribution of parameters $\Theta$, weighted by the prior probability $P(\Theta)$. It is formulated as:
+\subsubsection{Dropout as a Bayesian Approximation: Representing Model Uncertainty in Deep Learning\cite{gal2016, gal2016phd} (MC dropout)}
+Dropout\cite{srivastava2014} is a commonly used technique for model regularization, which randomly ignores a fraction of neurons during training to mitigate the problem of overfitting. It is typically disabled during test time. MC-dropout involves the assessment of uncertainty in neural networks using dropout at test time \cite{gal2016, gal2016phd} and thus estimates the uncertainty of the prediction of an image. MC-dropout generates non-deterministic prediction distributions for each image. The variance of this distribution can be used as an approximation for model uncertainty $\delta$. During each active learning iteration, the images with the highest variance are annotated and added to the labeled set $\mathcal{L}$. This has been shown to be an effective selection criterion during active learning \cite{gal2016}. \\
+In order to derive the theory which enables the modeling of uncertainty in neural networks using dropout, lets start with some background information by explaining Bayesian modelling and Variational Inference. Let $\mathcal{L} = \{(x_1, y_1), (x_2, y_2), (x_3, y_3) ... ((x_N, y_N))\}$ with $|L| = N$, be a set of labeled data points. The objective is to find the parameters $\Theta$ of a function $f^\Theta$, which map the inputs to outputs i.e. $\hat{Y} = f^\Theta(\mathcal{L})$. The parameters $\Theta$ can be optimized using techniques such as stochastic gradient descent to obtain a single set of $\Theta$, which in turn gives us a single set of predictions $\hat{Y}$. However, in a Bayesian setting, the model is represented as a distribution over the parameters $\Theta$ and hence a predictive posterior distribution over $\hat{Y}$ is obtained. Marginalization is a fundamental part of Bayesian modelling. The marginal likelihood represents an weighted average over the distribution of parameters $\Theta$, weighted by the prior probability $P(\Theta)$. It is formulated as:
 \begin{equation}
     \label{equation:marginal_likelihood_mc_dropout}
     P(Y | X) = \int P(Y | X, \Theta) p(\Theta) d\Theta
@@ -117,27 +118,27 @@ As equation \ref{equation:kl_divergence_mc_dropout} contains $P(\Theta| X, Y)$, 
 \end{equation}
 
 Calculating equation \ref{equation:evidence_lower_bound_mc_dropout} is not computationally tractable for large datasets or complicated approximated distributions. The authors in this paper provide another way to perform Variational Inference, which is scalable and computationally tractable. The approximating distribution is reformulated as $q_{\theta}(\Theta)$ with $\Theta = M_i . diag([Z_{i, j}]_{j=1}^{K_i})$ and with $Z_i,j \sim Bernoulli(p_i)$ for $i = 1, ...,L$ and $j = 1, ...,K$. Here, L is the number of layers and K is the number of nodes in each layer. Each $Z_{i,j}$ is Bernoulli random variable which specifies if the input should be set to zero or not with a probability $p_i$. \\
-Using the reformulated $q_{\theta}(\Theta)$, it is not possible to calculate equation \ref{equation:evidence_lower_bound_mc_dropout} because of the integral. Two contributions in the paper tackle this problem:
+Using the reformulated $q_{\theta}(\Theta)$, it is not possible to calculate equation \ref{equation:evidence_lower_bound_mc_dropout} because of the integral. Two ways in which this problem is tackled are:
 \begin{itemize}
   \setlength\itemsep{0em}
   \item The integral in equation \ref{equation:evidence_lower_bound_mc_dropout} can be approximated using loss functions such as softmax loss and mean squared error loss with L2 regularization.
   \item This variational inference is equivalent to a Gaussian Process (GP) approximation of neural network with model precision $\tau$ and length scale l, meaning we get an approximation of distribution over possible functions given data points.
 \end{itemize}
-The posterior distribution of parameters $\Theta$ can now be approximated along with the mean and variance. The uncertainty values obtained through MC dropout can be used for active learning.
+The posterior distribution of parameters $\Theta$ can now be approximated along with the mean and variance. Thus, the uncertainty values obtained through MC dropout can be used for active learning.
 
 \subsubsection{Augmentations-based sampling\cite{sadafi2019}}
-Let $\mathcal{A}$ be a function which performs stochastic data augmentations (further details on $\mathcal{A}$ are provided in appendix) on a given data point. Each unlabeled data point $(u_i\in\mathcal{U})$ is transformed using $\mathcal{A}$ and this process is repeated N times, to obtain the set $U_i = \{u_{1i}^{`}, u_{2i}^{`}, u^{`}_{3i}, ... u_{Ni}^{`}\}$ with $\forall u_i^{`} \in U_i = \mathcal{A}(u_i)$ and $|U_i| = N$. The random transformations are followed by a forward pass through the model ($f^\Theta$ with parameters $\Theta$) which results in N predictions $\hat{Q}_i = \{\hat{q}_{1i}, \hat{q}_{2i}, \hat{q}_{3i} ... \hat{q}_{Ni}\}$ (where $\hat{q}_i = argmax(P_\Theta(\hat{y}_i|x_i))$ is the most probable class according to the model output) for each set of perturbed copies of a unlabeled data point $X_i$. An uncertainty measure based on the mode of N predictions, introduced in this paper\cite{sadafi2019} is used for labeling the data points that the model is most uncertain about. The proposed uncertainty measure is:
+Let $\mathcal{A}$ be a function which performs stochastic data augmentations such as cropping, horizontal flipping, vertical flipping or erasing in case of an image (further details on $\mathcal{A}$ are provided in appendix). Each unlabeled data point $u_i\in\mathcal{U}$, is transformed using $\mathcal{A}$ and this process is repeated J times, to obtain the set $U_i = \{u_{1i}^{`}, u_{2i}^{`}, u^{`}_{3i}, ... u_{Ji}^{`}\}$. The random transformations are followed by a forward pass through the model $f^\Theta$ with parameters $\Theta$, which results in N predictions $\hat{Q}_i = \{\hat{q}_{1i}, \hat{q}_{2i}, \hat{q}_{3i} ... \hat{q}_{Ni}\}$ where $\hat{q}_i = argmax(P_\Theta(\hat{y}_i|x_i)$ is the most probable class according to the model output, for each set of perturbed copies of a unlabeled data point $U_i$. An uncertainty measure based on the mode of J predictions, introduced in this paper\cite{sadafi2019} is used for labeling the data points that the model is most uncertain about. The proposed uncertainty measure is:
 
 \begin{equation}
     \label{equation:augmentation_based_sampling}
-    \delta_{i} = \frac{1}{N} \sum_{k=1}^{N} \mathbb{1}(\hat{q}_{ik}, M(\hat{Q}_i))
+    \delta_{i} = \frac{1}{J} \sum_{k=1}^{J} \mathbb{1}(\hat{q}_{ik}, M(\hat{Q}_i))
 \end{equation}
 
 where,
 \begin{itemize}[label={}]
   \setlength\itemsep{0em}
   \item $\delta_{i}$ represents the uncertainty measure of the $i^{th}$ data point
-  \item N is the size of set $U_i$ i.e. $|U_i| = N$
+  \item J is the size of set $U_i$ i.e. $|U_i| = N$
   \item $\hat{q}_{ik}$ represents the prediction for the $k^{th}$ element of the set $U_i$
   \item $M(\hat{Q}_i)$ represents the mode of the set $\hat{Q}_i$
   \item $\mathbb{1}$ is the indicator function, $\mathbb{1}(\hat{y}_{ik}, M(\hat{Q}_i)) = \begin{cases} 
@@ -146,7 +147,7 @@ where,
    \end{cases}$
 \end{itemize}
 
-Hence, by keeping count of the predictions $\hat{y}_i$, which are not equal to the mode, the uncertainty of the model can be be determined. The k data points which the model is most uncertain about are selected for labeling.
+Hence, The model uncertainty $\delta$ can be estimated by keeping a count of the most frequently predicted class (mode) for each image. The idea behind this approach is that if the model is certain about an image then it should output the same prediction for randomly augmented versions. So the lower the frequency of the mode, the higher the uncertainty $\delta$ \cite{sadafi2019}. During each active learning iteration, the images with  the lowest frequency of the most frequently predicted class are annotated and added to the labeled set $\mathcal{L}$.
 
 \section{Semi-supervised Learning}\label{section:semi_supervised}
 Semi-supervised learning methods aim to exploit the information contained in the set $\mathcal{U}$
