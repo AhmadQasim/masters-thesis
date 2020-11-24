@@ -1,0 +1,19 @@
+% !TeX root = ../main.tex
+% Add the above to each chapter to make compiling the PDF easier in some editors.
+
+\chapter{Conclusion}\label{chapter:conclusion}
+
+In this paper, we have investigated the performance of different annotation-efficient learning strategies for biomedical image classification. First, we showed that for classifying white blood cells into 10 different classes, active learning can boost macro recall. Second, we showed using ImageNet and SimCLR pre-training can increase the performance further. However, their contribution is dataset dependent: While for white blood cell and skin lesion dataset, ImageNet weight led to better performance, SimCLR performed better for classifying cell cycles (Figure 3). This might be due to the nature of images: Cell cycle data is captured by fluorescent imaging which follows a very different color distribution than other technologies such as dermoscopy cameras, which are closer to natural images. Therefore, ImageNet pre-training might not be the preferred way for such data.
+We also showed that by incorporating unlabeled data in the training process in a semi-supervised manner, one can improve the performance of the classification noticeably. Finally, by doing a grid-search over all the possible algorithms and strategies (Table 1), we found out that the combination of ImageNet or SimCLR pre-training, FixMatch semi-supervised learning and augmentation-based sampling can improve existing methods for every dataset. The reason for this is probably the fact that while training FixMatch, the network faces many different augmentations for each image and learns to make a robust prediction. Augmentation-based sampling relies on the same idea for finding those images where predictions were not robust enough. 
+
+As a result of this study, we propose an annotation-efficient strategy for biomedical imaging active learning tasks where unlabeled data is abundant (Figure 4). We split our strategy into two parts including pre-training and active learning. First, we suggest to pre-train the network using SimCLR. Then compare FixMatch initialized with ImageNet weights to SimCLR pre-training. By comparing the results, select the best pre-training method. Eventually for the active learning part, we recommend to train FixMatch along with the best pre-training method and augmentation-based sampling to obtain optimal results.
+
+Although our work shows potential for improvement of annotation-efficient learning for three biomedical image classification datasets, the methodology should be tested on more datasets to gain insights into correlations between dataset characteristics and the performance of the applied methods. Due to the computational costs we used a fixed architecture and a fixed set of parameters. As the next step, we will try different architectures and parameters and evaluate the results accordingly. Also, a variety of active learning, semi-supervised and self-supervised learning methods should be added to the work to find the optimal strategy. Finally, to make our findings relevant to the biomedical deep learning field, implementations of the combined methods that allow for quick and easy application need to be provided in an open source implementation.
+
+\begin{figure}[htbp]
+\centering
+\captionsetup{format=plain}
+\includegraphics[height=0.65\textheight]{figures/fig_results_4.png}
+\caption{Recommended strategy for annotation-efficient classification of biomedical image data involves SimCLR or ImageNet pre-training, FixMatch as the semi-supervised algorithm for training and augmentation-based sampling during active learning until the desired performance is reached.}
+\label{fig:results_4}
+\end{figure}

@@ -1,0 +1,56 @@
+\RequirePackage[l2tabu,orthodox]{nag}
+
+% TODO: decide if one-sided/two-sided
+%\documentclass[headsepline,footsepline,footinclude=false,fontsize=11pt,paper=a4,listof=totoc,bibliography=totoc,BCOR=12mm,DIV=12]{scrbook} % two-sided
+\documentclass[headsepline,footsepline,footinclude=false,oneside,fontsize=11pt,paper=a4,listof=totoc,bibliography=totoc]{scrbook} % one-sided
+
+% TODO: change citation style in settings
+\input{settings}
+
+% TODO: change thesis information
+\newcommand*{\getUniversity}{Technische Universität München}
+\newcommand*{\getFaculty}{Department of Informatics}
+\newcommand*{\getTitle}{A comparison of active and semi-supervised learning in medical imaging setting}
+\newcommand*{\getTitleGer}{Ein Vergleich von aktivem und semi-überwachtes machinellem Lernen in der medizinischen Bildgebung}
+\newcommand*{\getAuthor}{Ahmad Bin Qasim}
+\newcommand*{\getDoctype}{Master's Thesis}
+\newcommand*{\getSupervisor}{Prof. Dr. Bjoern Menze}
+\newcommand*{\getAdvisor}{Dr. Carsten Marr, Ali Boushehri, Dominik Waibel, Ivan Ezhov}
+\newcommand*{\getSubmissionDate}{15.12.2020}
+\newcommand*{\getSubmissionLocation}{Munich}
+
+\begin{document}
+
+% Set page numbering to avoid "destination with the same identifier has been already used" warning for cover page.
+% (see https://en.wikibooks.org/wiki/LaTeX/Hyperlinks#Problems_with_Links_and_Pages).
+\pagenumbering{alph}
+\input{pages/cover}
+
+\frontmatter{}
+
+\input{pages/title}
+\input{pages/disclaimer}
+\input{pages/acknowledgments}
+\input{pages/abstract}
+\microtypesetup{protrusion=false}
+\tableofcontents{}
+\microtypesetup{protrusion=true}
+
+\mainmatter{}
+
+\input{chapters/01_introduction.tex}
+\input{chapters/02_datasets.tex}
+\input{chapters/03_methods.tex}
+\input{chapters/04_experiments.tex}
+\input{chapters/05_results.tex}
+\input{chapters/06_conclusion.tex}
+
+\appendix{}
+
+\microtypesetup{protrusion=false}
+\listoffigures{}
+\listoftables{}
+\microtypesetup{protrusion=true}
+\printbibliography{}
+
+\end{document}

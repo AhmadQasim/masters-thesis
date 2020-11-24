@@ -1,0 +1,283 @@
+% !TeX root = ../main.tex
+% Add the above to each chapter to make compiling the PDF easier in some editors.
+
+% rework this method to incorporate all the changes from the paper
+\chapter{Methods}\label{chapter:methods}
+In this section, the active learning algorithms, pre-training methods and training strategies evaluated throughout this thesis are defined. Consider that there exists a labeled subset of the dataset, $\mathcal{L}$, such that $\mathcal{L} = \{(x_1, y_1), (x_2, y_2), (x_3, y_3) ... ((x_N, y_N))\}$ with $|L| = N$, where $x_i$ is a data point and $y_i$ is the corresponding label. Also, a subset $\mathcal{U}$ exists such that $\mathcal{U} = \{u_1, u_2, u_3 ... u_K\}$ with $|U| = K$, where $x_i$ is the unlabeled data point and $K>>N$. By definition, consider $\mathcal{D} = \mathcal{L} \cup \mathcal{U}$, where $\mathcal{D}$ is the whole dataset. The performance of a model can be evaluated using an evaluation metric $\mathcal{M}$. Let us define the model $f^\Theta$ with parameters $\Theta$.
+
+% keep this for the supervised learning section
+% In a supervised learning setting, the model ($f^\Theta$ with parameters $\Theta$) learns a mapping $\hat{Y} = f^\Theta(\mathcal{L})$ such that the objective function $L = \sum_{i=0}^{N} l(\hat{y_i}, y_i)$ is minimized. 
+
+
+\section{Baseline}\label{section:baseline}
+A baseline method acts as a lower bound requirement, which defines a scale for comparing other methods against each other.
+\subsection{Random Sampling}
+Random Sampling is used as a baseline method. During each selection cycle, k data points are selected, such that $\mathcal{S} \subseteq \mathcal{U}$ with $|\mathcal{S}| = k$ and $\forall s \in \mathcal{S}$ chosen arbitrarily. Random Sampling acts as a baseline because all elements of $\mathcal{S}$ are selected randomly without using an underlying selection mechanism. Hence, all methods are expected to perform better than random sampling.
+
+\section{Active Learning}\label{section:active_learning}
+The performance of a model can be increased by labeling the data points in the set $\mathcal{U}$, and adding the pairs of data points and their corresponding labels to the set $\mathcal{L}$. The labeling of unlabeled data points is carried out in selection cycles, which constitute selection of k data points $S \subseteq \mathcal{U}$ with $|S| = k$, after the performance of the model converges to a certain value with the current labeled set $\mathcal{L}$. Hereby, the active learning methods, semi-supervised learning methods as well as a baseline method, compared in this thesis are explained further.
+
+\subsection{Uncertainty Sampling}
+
+% specify an equation for how top k data points are selected
+% hint: use i as the index
+\subsubsection{Entropy-based Sampling\cite{settles2009}}
+Entropy\cite{shannon1948} $(H)$ is an information theoretic metric, which measures the average amount of information or "bits" required for encoding the distribution of a random variable. Hence, if different outcomes of a random variable have more varied values, then it results in a higher entropy value. Entropy is used as an acquisition function in active learning, to select the k data points $\mathcal{S} \subseteq \mathcal{U}$ with $|\mathcal{S}| = k$ and $|U| = K$, whose predicted outcomes have the highest entropy values, as the model $(f^\Theta)$ is not certain about those predictions. Entropy considers the whole predicted distribution rather than only the highest or k-highest probability outcomes of the model, as in other uncertainty sampling methods such as least-confidence, margin sampling etc.\cite{settles2009}. In discrete terms, entropy-based uncertainty can be calculated as:
+\begin{equation}
+    \label{equation:entropy_sampling}
+    \delta_{i} = - \sum_{c=0}^{C} P_{\Theta}(\hat{y}_i = c|x_i)logP_{\Theta}(\hat{y}_i = c|x_i)
+\end{equation}
+where,
+\begin{itemize}[label={}]
+  \setlength\itemsep{0em}
+  \item $x_i$ represents the $i^{th}$ data point
+  \item $P(\hat{y}_i|x_i)$ is the predicted distribution
+  \item $\delta_{i}$ represents the uncertainty measure of the $i^{th}$ data point
+  \item C is the total number of possible values of labelings
+  \item $\Theta$ indicates the model parameters
+\end{itemize}
+
+% specify the equations in this section according to i th indexes
+% specify an equation for how the top k loss points are selected
+\subsubsection{Learning Loss for Active Learning\cite{yoo2019}}
+In this paper, the authors introduce a simple learning loss prediction module ($f^{\Theta_{loss}}$ with parameters $\Theta_{loss}$), which can be applied to any deep learning network ($f^{\Theta_{target}}$ with parameters $\Theta_{target}$). This method is task agnostic, such as it can be applied to various deep learning tasks such as classification, segmentation etc. The loss prediction module is used as the acquisition function for selecting k data points $\mathcal{S} \subseteq \mathcal{U}$ with $|\mathcal{S}| = k$ and $|U| = K$ with highest predicted loss. \\
+The objective function consists of two terms, a supervised loss term and the loss prediction term. For supervised loss, the standard cross entropy loss function\cite{cox1958} is used. The complete objective function formulation is:
+\begin{equation}
+    \label{equation:learning_loss_full_loss}
+    L = L_{target}(\hat{Y}, Y) + \lambda \cdot L_{loss}(\hat{l}, l)
+\end{equation}
+where,
+\begin{itemize}[label={}]
+  \setlength\itemsep{0em}
+  \item Y represents the ground truth labels
+  \item $\hat{Y}$ represents the predicted labels, $\hat{Y} = f^{\Theta_{target}}(\mathcal{L})$
+  \item $l$ represents the true loss values obtained from $f^{\Theta_{target}}$
+  \item $\hat{l}$ represents the predicted loss values, $\hat{l} = f^{\Theta_{loss}}(h)$
+  \item $h$ represents the hidden features extracted from multiple layers of $f^{\Theta_{target}}$
+  \item $L_{target}$ is the supervised cross entropy loss function (H) i.e. $L_{target}(\hat{Y}, Y) = H(\hat{Y}, Y)$
+  \item $L_{loss}$ is the loss objective function
+  \item $\lambda$ is the weighting factor between two loss terms
+\end{itemize}
+The loss objective function, $L_{loss}(\hat{l}, l)$, has to be chosen such that the scale of the true loss, which decrease as the training progresses, does not impact the overall value of $L_{loss}$. The authors suggest a pairwise loss function. Considering a mini-batch of size $B$, $B/2$ pairs can be obtained: $\{x^p = (x_i, x_j)\}$ and by directly comparing the difference in true and predicted loss for each pair, the decreasing scale of the loss can be discarded. The loss objective function is defined as:
+\begin{equation}
+    \label{equation:learning_loss_pair_wise_loss}
+    L_{loss}(\hat{l}^{p}, l^{p}) = max [0, \mathbb{1}(l_i, l_j)\cdot(\hat{l_i}, \hat{l_j}) + \epsilon ]
+\end{equation}
+where,
+\begin{itemize}[label={}]
+  \setlength\itemsep{0em}
+  \item $\mathbb{1}$ is the indicator function, $\mathbb{1}(l_i, l_j) = \begin{cases} 
+      +1 & if \quad l_i > l_j \\
+      -1 & otherwise \\
+   \end{cases}$
+   \item $\epsilon$ is the predefined positive margin
+\end{itemize}
+
+\subsubsection{Dropout as a Bayesian Approximation: Representing Model Uncertainty in Deep Learning\cite{gal2016}\cite{gal2016phd} (MC dropout)}
+In this paper, the authors derive theory which enables the modeling of uncertainty in neural networks using dropout\cite{srivastava2014}. As a result the uncertainty of neural network can be modeled in a computationally feasible way. \\
+In order to explain the contributions of the authors in this paper, let us briefly explain Bayesian modelling and Variational Inference. Let $\mathcal{L} = \{(x_1, y_1), (x_2, y_2), (x_3, y_3) ... ((x_N, y_N))\}$ with $|L| = N$, be a set of labeled data points. The objective is to find the parameters $\Theta$ of a function $f^\Theta$, which map the inputs to outputs i.e. $\hat{Y} = f^\Theta(\mathcal{L})$. The parameters $\Theta$ can be optimized using techniques such as stochastic gradient descent to obtain a single set of $\Theta$, which in turn gives us a single set of predictions $\hat{Y}$. However, in a Bayesian setting, the model is represented as a distribution over the parameters $\Theta$ and hence a predictive posterior distribution over $\hat{Y}$ is obtained. Marginalization is a fundamental part of Bayesian modelling. The marginal likelihood represents an weighted average over the distribution of parameters $\Theta$, weighted by the prior probability $P(\Theta)$. It is formulated as:
+\begin{equation}
+    \label{equation:marginal_likelihood_mc_dropout}
+    P(Y | X) = \int P(Y | X, \Theta) p(\Theta) d\Theta
+\end{equation}
+
+Using equation \ref{equation:marginal_likelihood_mc_dropout}, the posterior distribution of parameters $\Theta$ can be formulated using Bayes' Theorem as:
+\begin{equation}
+    \label{equation:post_dist_theta_mc_dropout}
+    P(\Theta | X, Y) = \frac{P(Y | X, \Theta) P (\Theta)}{P(Y | X)}
+\end{equation}
+
+where,
+\begin{itemize}[label={}]
+  \setlength\itemsep{0em}
+  \item $P (\Theta)$ is the prior probability over the parameters
+\end{itemize}
+Using equation \ref{equation:post_dist_theta_mc_dropout}, the label $w_i$ for an unlabeled data point $u_i$ where $(u_i\in\mathcal{U})$ can be predicted as:
+
+\begin{equation}
+    \label{equation:prediction_mc_dropout}
+    P(w_i | u_i, X, Y) = \int P(w_i|u_i, \Theta)P(\Theta|X, Y)d\Theta
+\end{equation}
+The process in equation \ref{equation:prediction_mc_dropout} is called Bayesian inference. However, the integral in $P(Y|X)$ can only be calculated analytically for very small datasets. In order to tackle this issue, Variational Inference can be used. \\
+The main idea behind Variational Inference is that, as $P(\Theta | X, Y)$ cannot be calculated analytically, a variational distribution $q_\theta$ with parameters $\theta$ can be specified as an approximation of $P(\Theta | X, Y)$. The variational distribution $q_\theta$ is easy to evaluate, so Kullback–Leibler (KL) divergence\cite{kullback1951} is used to optimize the parameters $\theta$ such that $q_\theta$ is as close as possible to $P(\Theta | X, Y)$. KL divergence is formulated as:
+
+\begin{equation}
+    \label{equation:kl_divergence_mc_dropout}
+    KL(q_\theta(\Theta)|P(\Theta| X, Y)) = \int{q_\theta(\Theta)log\frac{q_\theta(\Theta)}{P(\Theta| X, Y)}d\Theta}
+\end{equation}
+Replacing $P(\Theta| X, Y)$ with $q_\theta(\Theta)$ in equation \ref{equation:prediction_mc_dropout}:
+\begin{equation}
+    \label{equation:prediction_replaced_mc_dropout}
+    P(w_i | u_i, X, Y) = \int P(w_i|u_i, \Theta)q_\theta(\Theta)d\Theta
+\end{equation}
+As equation \ref{equation:kl_divergence_mc_dropout} contains $P(\Theta| X, Y)$, it cannot be calculated. However, it has been found that minimizing equation \ref{equation:kl_divergence_mc_dropout} can be done by maximizing evidence lower bound (ELBO)\cite{bishop2006}:
+\begin{equation}
+    \label{equation:evidence_lower_bound_mc_dropout}
+    \mathcal{L}_{VI}(\theta) = \int{q_\theta(\Theta)logP(\Theta| X, Y)d\Theta - KL(q_\theta(\Theta)|P(\Theta))}
+\end{equation}
+
+Calculating equation \ref{equation:evidence_lower_bound_mc_dropout} is not computationally tractable for large datasets or complicated approximated distributions. The authors in this paper provide another way to perform Variational Inference, which is scalable and computationally tractable. The approximating distribution is reformulated as $q_{\theta}(\Theta)$ with $\Theta = M_i . diag([Z_{i, j}]_{j=1}^{K_i})$ and with $Z_i,j \sim Bernoulli(p_i)$ for $i = 1, ...,L$ and $j = 1, ...,K$. Here, L is the number of layers and K is the number of nodes in each layer. Each $Z_{i,j}$ is Bernoulli random variable which specifies if the input should be set to zero or not with a probability $p_i$. \\
+Using the reformulated $q_{\theta}(\Theta)$, it is not possible to calculate equation \ref{equation:evidence_lower_bound_mc_dropout} because of the integral. Two contributions in the paper tackle this problem:
+\begin{itemize}
+  \setlength\itemsep{0em}
+  \item The integral in equation \ref{equation:evidence_lower_bound_mc_dropout} can be approximated using loss functions such as softmax loss and mean squared error loss with L2 regularization.
+  \item This variational inference is equivalent to a Gaussian Process (GP) approximation of neural network with model precision $\tau$ and length scale l, meaning we get an approximation of distribution over possible functions given data points.
+\end{itemize}
+The posterior distribution of parameters $\Theta$ can now be approximated along with the mean and variance. The uncertainty values obtained through MC dropout can be used for active learning.
+
+\subsubsection{Augmentations-based sampling\cite{sadafi2019}}
+Let $\mathcal{A}$ be a function which performs stochastic data augmentations (further details on $\mathcal{A}$ are provided in appendix) on a given data point. Each unlabeled data point $(u_i\in\mathcal{U})$ is transformed using $\mathcal{A}$ and this process is repeated N times, to obtain the set $U_i = \{u_{1i}^{`}, u_{2i}^{`}, u^{`}_{3i}, ... u_{Ni}^{`}\}$ with $\forall u_i^{`} \in U_i = \mathcal{A}(u_i)$ and $|U_i| = N$. The random transformations are followed by a forward pass through the model ($f^\Theta$ with parameters $\Theta$) which results in N predictions $\hat{Q}_i = \{\hat{q}_{1i}, \hat{q}_{2i}, \hat{q}_{3i} ... \hat{q}_{Ni}\}$ (where $\hat{q}_i = argmax(P_\Theta(\hat{y}_i|x_i))$ is the most probable class according to the model output) for each set of perturbed copies of a unlabeled data point $X_i$. An uncertainty measure based on the mode of N predictions, introduced in this paper\cite{sadafi2019} is used for labeling the data points that the model is most uncertain about. The proposed uncertainty measure is:
+
+\begin{equation}
+    \label{equation:augmentation_based_sampling}
+    \delta_{i} = \frac{1}{N} \sum_{k=1}^{N} \mathbb{1}(\hat{q}_{ik}, M(\hat{Q}_i))
+\end{equation}
+
+where,
+\begin{itemize}[label={}]
+  \setlength\itemsep{0em}
+  \item $\delta_{i}$ represents the uncertainty measure of the $i^{th}$ data point
+  \item N is the size of set $U_i$ i.e. $|U_i| = N$
+  \item $\hat{q}_{ik}$ represents the prediction for the $k^{th}$ element of the set $U_i$
+  \item $M(\hat{Q}_i)$ represents the mode of the set $\hat{Q}_i$
+  \item $\mathbb{1}$ is the indicator function, $\mathbb{1}(\hat{y}_{ik}, M(\hat{Q}_i)) = \begin{cases} 
+      1 & if \quad \hat{y}_{ik} \neq M(\hat{Q}_i) \\
+      0 & otherwise \\
+   \end{cases}$
+\end{itemize}
+
+Hence, by keeping count of the predictions $\hat{y}_i$, which are not equal to the mode, the uncertainty of the model can be be determined. The k data points which the model is most uncertain about are selected for labeling.
+
+\section{Semi-supervised Learning}\label{section:semi_supervised}
+Semi-supervised learning methods aim to exploit the information contained in the set $\mathcal{U}$
+\subsection{Wrapper methods}
+Wrapper methods one of the oldest known semi-supervised learning techniques\cite{van2020}. Wrapper methods involve training a base learner with the labeled set $\mathcal{L}$ as well as the unlabeled set $\mathcal{U}$, for which the labels are acquired through pseudo-labeling\cite{mclachlan1975}. The training process involves two steps: the base learner is trained on the labeled set as well as the pseudo-labeled set from previous iterations and then predictions ($\hat{y}$) are obtained on the unlabeled set. The unlabeled data points ($x \in \mathcal{U}$), for which the base learner outputs predictions with a high confidence are assigned the corresponding predicted label and added to training set as pseudo-labeled data for the next iteration. \\
+An advantage of wrapper methods is that, they can be added as a wrapper around the base learner. The base learner doesn't have to be modified and the pseudo-labeled data is processed as normal labeled data by the base learner.
+
+\subsection{Feature Extraction}
+\subsubsection{Autoencoder\cite{kramer1991}}
+Traditional autoencoders are the most prominent example of neural networks used for feature extraction. The objective of the autoencoders is to reconstruct the input. An encoder network ($f^{\Theta_{enc}}$ with parameters $\Theta_{enc}$), encodes the input ($x$) into its latent representation i.e. $f^{\Theta_{enc}}(x)$. The encoder also includes a bottleneck layer, which contains relatively few nodes. The bottleneck layer forces the encoder to represent the input data in a compact form. The latent representation is used as an input to a decoder network ($f^{\Theta_{dec}}$ with parameters $\Theta_{dec}$), which tries to output a reconstruction ($f^{\Theta_{dec}}(f^{\Theta_{enc}}(x))$), of the original input. \\
+The autoencoders try to find a lower dimensional encoding of the input data. They are widely used for dimensionality reduction. Principal Component Analysis (PCA), is another dimensionality reduction technique which is restricted to linear maps. A linear autoencoder without any non-linear activation functions, spans the same subspace as PCA\cite{baldi1989}. Autoencoders work on the basis of the assumption that there are underlying substructures within the data which can be represented in the latent representation and they can be trained in an unsupervised manner. This allows the autoencoders to be used for semi-supervised learning.
+The objective function of autoencoders can be stated as:
+\begin{equation}
+    \label{equation:autoencoders_loss}
+    L = \left\Vert x - f^{\Theta_{dec}}(f^{\Theta_{enc}}(x)) \right\Vert^2
+\end{equation}
+
+\subsection{Perturbation Based}
+\subsubsection{A Simple Framework for Contrastive Learning of Visual Representations
+\cite{chen2020}}
+A Simple Framework for Contrastive Learning of Visual Representations (SimCLR), learns representations using a objective function which minimizes the difference between the representations of the model ($f^\Theta$ with parameters $\Theta$) on each pair of differently augmented copies of the same data point. \\
+Let $\mathcal{A}$ be a function which performs stochastic data augmentations (for details on the data augmentations refer to the SimCLR paper) on a given data point. Each data point $x, \forall x \in \mathcal{D}$ in a mini-batch of size $\mathcal{B}$, is passed through the stochastic data augmentations function $\mathcal{A}$ twice, to obtain $X_i = \{x_{1i}^{`}, x_{2i}^{`}\}$ with $\forall x_i^{`} \in X_i = \mathcal{A}(x_i)$. These pairs can be termed as positive pairs as they originate from the same data point. A neural network encoder ($f^{\Theta_{enc}}$ with parameters $\Theta_{enc}$), extracts the feature vectors from the augmented data points:
+
+\begin{equation}
+    \label{equation:simclr_encoder}
+    h_k = f^{\Theta_{enc}}(x_k)
+\end{equation}
+
+where,
+\begin{itemize}[label={}]
+  \setlength\itemsep{0em}
+  \item $h_k \in \mathbb{R}^{d}$ is the feature vector for $k^{th}$ data point
+\end{itemize}
+
+A multi-layer perceptron ($f^{\Theta_{MLP}}$ with parameters $\Theta_{MLP}$) with one hidden layer is used as a projection head for projecting the feature vectors h to projection space where the contrastive loss is applied. The authors show in the paper that applying contrastive loss in projection space is better than applying it in the feature space. The projections are obtained by:
+
+\begin{equation}
+    \label{equation:simclr_mlp}
+    z_k = f^{\Theta_{MLP}}(h_k) = W^{2}\sigma(W^{1}h_k)
+\end{equation}
+
+where,
+\begin{itemize}[label={}]
+  \setlength\itemsep{0em}
+  \item $z_k \in \mathbb{R}^{p}$ is the projection $k^{th}$ feature vector
+  \item $h_k \in \mathbb{R}^{d}$ is the feature vector for $k^{th}$ data point
+  \item $\sigma$ is the ReLU\cite{nwankpa2018} non-linear activation function
+\end{itemize}
+After performing stochastic augmentations on each data point in a mini-batch of size $\mathcal{B}$, the total number of data points increase to $2\mathcal{B}$. This results in $\mathcal{B}$ positive pairs and $2(\mathcal{B}-1)$ negative pairs (which can be obtained by pairing up an augmented data point with any other data point in the set except its own second augmented version). The contrastive loss for a positive pair $(x_{1i}^{`}, x_{2i}^{`})$ can be termed as:
+
+\begin{equation}
+    \label{equation:simclr_contrastive_loss}
+    L_{(1i, 2i)} = -log \frac{exp(sim(z_{1i}, z_{2i}) / \tau)}{\sum_{k=1}^{2\mathcal{B}} \mathbb{1}[k\neq 1i] exp(sim(z_{1i}, z_{k}) / \tau)}
+\end{equation}
+
+where,
+\begin{itemize}[label={}]
+  \setlength\itemsep{0em}
+  \item $\mathbb{1}$ is the indicator function, $\mathbb{1}(k, 1i) = \begin{cases} 
+      1 & if \quad k \neq 1i \\
+      0 & otherwise \\
+   \end{cases}$ 
+   \item $\tau$ denotes a temperature parameter. 
+   \item $sim(x, y)$ is the cosine similarity function: $sim(x, y) = \frac{x^{T}y}{||x||||y||}$
+   \item The final loss value is obtained by computing it across all positive pairs i.e. (1i, 2i) and (2i, 1i).
+\end{itemize}
+
+\subsubsection{FixMatch: Simplifying Semi-Supervised Learning with Consistency and Confidence \cite{sohn2020}}
+FixMatch is a combination of two approaches in semi-supervised learning: consistency regularization\cite{sajjadi2016} and pseudo labeling\cite{mclachlan1975}. The main contribution of the authors is the combination of both concepts and using strong and weak augmentations for consistency regularization (for further details about the strong and weak augmentations, please refer to the FixMatch paper). \\
+Given the set of unlabeled data points $\mathcal{U} = \{u_1, u_2, u_3 ... u_K\}$ with $|U| = K$, consistency regularization tries to maximize the similarity between model ($f^\Theta$ with parameters $\Theta$) outputs, obtained by passing stochastically augmented versions of the same data point. \\
+Pseudo labeling refers to using artificial labels for unlabeled data points. The artificial labels are obtained by passing the unlabeled data points through the model ($f^\Theta$) i.e. $\hat{Y} = f^\Theta(\mathcal{U})$ and using the outcome $q$ with maximum probability in the predicted distribution i.e. $q_i = argmax(P_{\Theta}(y_i | x_i))$ as the artificial label, if the maximum probability value is above a threshold $\tau$. Using the artificial labels, the unlabeled data points are added to the set of labeled data points $\mathcal{L}$. Pseudo labeling uses the following loss function on the unlabeled data points:
+\begin{equation}
+    \label{equation:fixmatch_pseudo_labeling_loss}
+    L_{pseudo} = \frac{1}{K} \sum_{k=0}^{K} \mathbb{1}(max(P_{\Theta}(y_i | x_i)) \geq \tau) H(P_{\Theta}(\hat{y}_i | x_i), P_{\Theta}(y_i | x_i))
+\end{equation}
+
+where,
+\begin{itemize}[label={}]
+  \setlength\itemsep{0em}
+  \item K is the size of unlabeled dataset $\mathcal{U}$
+  \item $\mathbb{1}$ is the indicator function, $\mathbb{1}(max(P_{\Theta}(y_i | x_i) \geq \tau) = \begin{cases} 
+      1 & if \quad max(P_{\Theta}(y_i | x_i) \geq \tau \\
+      0 & otherwise \\
+   \end{cases}$ 
+   \item $\tau$ denotes the pseudo labeling threshold 
+   \item H is the cross entropy loss function
+\end{itemize}
+Consider two stochastic augmentations functions: the weak augmentations function $\alpha$ and strong augmentations function $\mathcal{A}$. The objective function in the FixMatch paper is comprised of two loss terms, the supervised loss term $L_{supervised}$ and unsupervised loss term $L_{unsupervised}$. The complete objective function is formulated as:
+\begin{equation}
+    \label{equation:fixmatch_loss}
+    L_{pseudo} = L_{supervised} + \lambda L_{unsupervised}
+\end{equation}
+
+where,
+\begin{itemize}[label={}]
+  \setlength\itemsep{0em}
+  \item $\lambda$ is the weighting factor for the unsupervised loss term
+\end{itemize}
+
+The supervised loss is simply the cross entropy loss on the weakly augmented examples within the labeled set $\mathcal{L}$. $L_{supervised}$ is formulated as:
+
+\begin{equation}
+    \label{equation:fixmatch_supervised_loss}
+    L_{supervised} = \frac{1}{N} \sum_{i=0}^{N} H(P_{\Theta}(\hat{y}_i | x_i), P_{\Theta}(y_i | x_i))
+\end{equation}
+
+where,
+\begin{itemize}[label={}]
+  \setlength\itemsep{0em}
+  \item N is the size of the labeled dataset $\mathcal{L}$
+  \item $P_{\Theta}(\hat{y}_i | x_i)$ is the predicted distribution
+  \item $P_{\Theta}(y_i | x_i)$ is the ground truth distribution
+\end{itemize}
+
+For the unsupervised loss, the unlabeled dataset $\mathcal{U}$, is passed through the stochastic weak augmentation function $\alpha$ and then pseudo labeling is applied on the output prediction distribution with threshold $\tau$. Consistency regularization is applied by calculating cross entropy between the pseudo labels and the labels obtained after passing the points through the strong augmentation function $\mathcal{A}$. $L_{unsupervised}$ is formulated as:
+
+\begin{equation}
+    \label{equation:fixmatch_unsupervised_loss}
+    L_{unsupervised} = \frac{1}{K} \sum_{k=0}^{K} \mathbb{1}(max(P_{\Theta}(y_i | x_i)) \geq \tau) H(P_{\Theta}(\hat{y}_i | \mathcal{A}(x_i)), P_{\Theta}(y_i | x_i))
+\end{equation}
+
+where,
+\begin{itemize}[label={}]
+  \setlength\itemsep{0em}
+  \item K is the size of unlabeled dataset $\mathcal{U}$
+  \item $\mathbb{1}$ is the indicator function, $\mathbb{1}(max(P_{\Theta}(y_i | x_i) \geq \tau) = \begin{cases} 
+      1 & if \quad max(P_{\Theta}(y_i | x_i) \geq \tau \\
+      0 & otherwise \\
+   \end{cases}$ 
+   \item $\tau$ denotes the pseudo labeling threshold 
+   \item H is the cross entropy loss function
+   \item $P_{\Theta}(y_i | x_i)$ is the distribution obtained after pseudo labeling
+   \item $P_{\Theta}(\hat{y}_i | \mathcal{A}(x_i))$ is the predicted distribution after strong augmentation
+\end{itemize}
