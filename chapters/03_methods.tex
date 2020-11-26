@@ -5,23 +5,15 @@
 \chapter{Methods}\label{chapter:methods}
 In this section, the active learning algorithms, pre-training methods and training strategies evaluated throughout this thesis are defined. Consider that there exists a labeled subset of the dataset, $\mathcal{L}$, such that $\mathcal{L} = \{(x_1, y_1), (x_2, y_2), (x_3, y_3) ... ((x_N, y_N))\}$ with $|L| = N$, where $x_i$ is a data point and $y_i$ is the corresponding label. Also, a subset $\mathcal{U}$ exists such that $\mathcal{U} = \{u_1, u_2, u_3 ... u_K\}$ with $|U| = K$, where $x_i$ is the unlabeled data point and $K>>N$. By definition, consider $\mathcal{D} = \mathcal{L} \cup \mathcal{U}$, where $\mathcal{D}$ is the whole dataset. Let us define the model $f^\Theta$ with parameters $\Theta$. The performance of a model can be evaluated using an evaluation metric $\mathcal{M}$.
 
-% keep this for the supervised learning section
-% In a supervised learning setting, the model ($f^\Theta$ with parameters $\Theta$) learns a mapping $\hat{Y} = f^\Theta(\mathcal{L})$ such that the objective function $L = \sum_{i=0}^{N} l(\hat{y_i}, y_i)$ is minimized. 
-
-
-\section{Baseline}\label{section:baseline}
-A baseline method acts as a lower bound requirement, which defines a scale for comparing other methods against each other.
-\subsection{Random Sampling}
-Random Sampling is used as a baseline method. During each iterations and in each iteration s data points are selected, such that $\mathcal{S} \subseteq \mathcal{U}$ with $|\mathcal{S}| = s$ and $\forall s \in \mathcal{S}$ chosen arbitrarily. Random Sampling acts as a baseline because all elements of $\mathcal{S}$ are selected randomly without using an underlying selection mechanism. Hence, all methods are expected to perform better than random sampling.
-
 \section{Active Learning}\label{section:active_learning}
-The performance of a model $f^\Theta$ with parameters $\Theta$ can be increased by labeling data points from $\mathcal{U}$ and adding pairs of data points and corresponding labels $(x_i, y_i)$ to $\mathcal{L}$. The labeling of unlabeled data points is carried out in iterations, which consists of the selection of s data points $S \subseteq \mathcal{U}$ with $|S| = s$, after the performance of the model converges with the updated labeled set $\mathcal{L}$. Active learning algorithms aim to select data points in $\mathcal{U}$ for annotation, such that the addition of these images to $\mathcal{L}$ results in a maximum increase in the evaluation metrics $\mathcal{M}$. The main difference between active learning algorithms is how images are chosen for labeling. The algorithms evaluated in this paper are based on model uncertainty $\delta$. The s data points $\mathcal{S} \in \mathcal{U}$ with $|\mathcal{S}| = s$ with the highest uncertainty are selected for labeling in each iteration. In this work, we compare three different active learning algorithms
+The performance of a model $f^\Theta$ with parameters $\Theta$ can be increased by labeling data points from $\mathcal{U}$ and adding pairs of data points and corresponding labels $(x_i, y_i)$ to $\mathcal{L}$. The labeling of unlabeled data points is carried out in iterations, which consists of the selection of s data points $S \subseteq \mathcal{U}$ with $|S| = s$, after the performance of the model converges with the updated $\mathcal{L}$. Active learning algorithms aim to select data points in $\mathcal{U}$ for annotation, such that the addition of these images to $\mathcal{L}$ results in a maximum increase in the evaluation metrics $\mathcal{M}$. The main difference between active learning algorithms is how images are chosen for labeling. The algorithms evaluated in this paper are based on model uncertainty $\delta$. The s data points $\mathcal{S} \in \mathcal{U}$ with $|\mathcal{S}| = s$ with the highest uncertainty are selected for labeling in each iteration. In this work, we compare three different active learning algorithms
 
-\subsection{Uncertainty Sampling}
+\subsection{Random Sampling}
+A baseline method acts as a lower bound requirement, which defines a scale for comparing other methods against each other. Random Sampling is used as a baseline method. During each iterations and in each iteration s data points are selected, such that $\mathcal{S} \subseteq \mathcal{U}$ with $|\mathcal{S}| = s$ and $\forall s \in \mathcal{S}$ chosen arbitrarily. Random Sampling acts as a baseline because all elements of $\mathcal{S}$ are selected randomly without using an underlying selection mechanism. Hence, all methods are expected to perform better than random sampling.
 
 % specify an equation for how top k data points are selected
 % hint: use i as the index
-\subsubsection{Entropy-based Sampling\cite{settles2009}}
+\subsection{Entropy-based Sampling}
 Entropy measures the average amount of information or "bits" required for encoding the distribution of a random variable \cite{shannon1948} $(H)$. If different outcomes of a random variable have more varied values, then it results in a higher entropy value. Here, entropy is used as an criteria for active learning \cite{settles2009} to select the s data points $\mathcal{S} \in \mathcal{U}$, whose predicted outcomes have the highest entropy, assuming that high entropy of predictions mean high model uncertainty $\delta$. By definition, entropy focuses on the whole predicted distribution rather than only on the highest probability outcomes of the model \cite{settles2009}. In discrete terms, entropy-based uncertainty can be calculated as:
 
 \begin{equation}
@@ -40,8 +32,8 @@ where,
 
 % specify the equations in this section according to i th indexes
 % specify an equation for how the top k loss points are selected
-\subsubsection{Learning Loss for Active Learning\cite{yoo2019}}
-Consider a simple learning loss prediction module $f^{\Theta_{loss}}$ with parameters $\Theta_{loss}$, which can be applied to any deep learning network $f^{\Theta_{target}}$ with parameters $\Theta_{target}$. This method is task agnostic, such as it can be applied to various deep learning tasks such as classification, segmentation etc. The loss prediction module is used for active learning to select s data points $\mathcal{S} \subseteq \mathcal{U}$ with $|\mathcal{S}| = s$ with the highest predicted loss. \\
+\subsection{Learning Loss for Active Learning}
+Consider a simple learning loss prediction module\cite{yoo2019} $f^{\Theta_{loss}}$ with parameters $\Theta_{loss}$, which can be applied to any deep learning network $f^{\Theta_{target}}$ with parameters $\Theta_{target}$. This method is task agnostic, such as it can be applied to various deep learning tasks such as classification, segmentation etc. The loss prediction module is used for active learning to select s data points $\mathcal{S} \subseteq \mathcal{U}$ with $|\mathcal{S}| = s$ with the highest predicted loss. \\
 The objective function consists of two terms, a supervised loss term and the loss prediction term. For supervised loss, the standard cross entropy loss function\cite{cox1958} is used. The complete objective function formulation is:
 \begin{equation}
     \label{equation:learning_loss_full_loss}
@@ -74,9 +66,9 @@ where,
    \item $\epsilon$ is the predefined positive margin
 \end{itemize}
 
-\subsubsection{Dropout as a Bayesian Approximation: Representing Model Uncertainty in Deep Learning\cite{gal2016, gal2016phd} (MC dropout)}
-Dropout\cite{srivastava2014} is a commonly used technique for model regularization, which randomly ignores a fraction of neurons during training to mitigate the problem of overfitting. It is typically disabled during test time. MC-dropout involves the assessment of uncertainty in neural networks using dropout at test time \cite{gal2016, gal2016phd} and thus estimates the uncertainty of the prediction of an image. MC-dropout generates non-deterministic prediction distributions for each image. The variance of this distribution can be used as an approximation for model uncertainty $\delta$. During each active learning iteration, the images with the highest variance are annotated and added to the labeled set $\mathcal{L}$. This has been shown to be an effective selection criterion during active learning \cite{gal2016}. \\
-In order to derive the theory which enables the modeling of uncertainty in neural networks using dropout, lets start with some background information by explaining Bayesian modelling and Variational Inference. Let $\mathcal{L} = \{(x_1, y_1), (x_2, y_2), (x_3, y_3) ... ((x_N, y_N))\}$ with $|L| = N$, be a set of labeled data points. The objective is to find the parameters $\Theta$ of a function $f^\Theta$, which map the inputs to outputs i.e. $\hat{Y} = f^\Theta(\mathcal{L})$. The parameters $\Theta$ can be optimized using techniques such as stochastic gradient descent to obtain a single set of $\Theta$, which in turn gives us a single set of predictions $\hat{Y}$. However, in a Bayesian setting, the model is represented as a distribution over the parameters $\Theta$ and hence a predictive posterior distribution over $\hat{Y}$ is obtained. Marginalization is a fundamental part of Bayesian modelling. The marginal likelihood represents an weighted average over the distribution of parameters $\Theta$, weighted by the prior probability $P(\Theta)$. It is formulated as:
+\subsection{Dropout as a Bayesian Approximation: Representing Model Uncertainty in Deep Learning (MC dropout)}
+Dropout\cite{srivastava2014} is a commonly used technique for model regularization, which randomly ignores a fraction of neurons during training to mitigate the problem of overfitting. It is typically disabled during test time. MC-dropout involves the assessment of uncertainty in neural networks using dropout at test time \cite{gal2016, gal2016phd} and thus estimates the uncertainty of the prediction of an image. MC-dropout generates non-deterministic prediction distributions for each image. The variance of this distribution can be used as an approximation for model uncertainty $\delta$. During each active learning iteration, the images with the highest variance are annotated and added to $\mathcal{L}$. This has been shown to be an effective selection criterion during active learning \cite{gal2016}. \\
+In order to derive the theory which enables the modeling of uncertainty in neural networks using dropout, lets start with some background information by explaining Bayesian modelling and Variational Inference. Let $\mathcal{L} = \{(x_1, y_1), (x_2, y_2), (x_3, y_3) ... ((x_N, y_N))\}$ with $|L| = N$, be a set of labeled data points. The objective is to find the parameters $\Theta$ of a function $f^\Theta$, which map the inputs to outputs i.e. $\hat{Y} = f^\Theta(\mathcal{L})$. The parameters $\Theta$ can be optimized using techniques such as stochastic gradient descent to obtain a single set of $\Theta$, which in turn outputs a single set of predictions $\hat{Y}$. However, in a Bayesian setting, the model is represented as a distribution over the parameters $\Theta$ and hence a predictive posterior distribution over $\hat{Y}$ is obtained. Marginalization is a fundamental part of Bayesian modelling. The marginal likelihood represents an weighted average over the distribution of parameters $\Theta$, weighted by the prior probability $P(\Theta)$. It is formulated as:
 \begin{equation}
     \label{equation:marginal_likelihood_mc_dropout}
     P(Y | X) = \int P(Y | X, \Theta) p(\Theta) d\Theta
@@ -126,8 +118,8 @@ Using the reformulated $q_{\theta}(\Theta)$, it is not possible to calculate equ
 \end{itemize}
 The posterior distribution of parameters $\Theta$ can now be approximated along with the mean and variance. Thus, the uncertainty values obtained through MC dropout can be used for active learning.
 
-\subsubsection{Augmentations-based sampling\cite{sadafi2019}}
-Let $\mathcal{A}$ be a function which performs stochastic data augmentations such as cropping, horizontal flipping, vertical flipping or erasing in case of an image (further details on $\mathcal{A}$ are provided in appendix). Each unlabeled data point $u_i\in\mathcal{U}$, is transformed using $\mathcal{A}$ and this process is repeated J times, to obtain the set $U_i = \{u_{1i}^{`}, u_{2i}^{`}, u^{`}_{3i}, ... u_{Ji}^{`}\}$. The random transformations are followed by a forward pass through the model $f^\Theta$ with parameters $\Theta$, which results in N predictions $\hat{Q}_i = \{\hat{q}_{1i}, \hat{q}_{2i}, \hat{q}_{3i} ... \hat{q}_{Ni}\}$ where $\hat{q}_i = argmax(P_\Theta(\hat{y}_i|x_i)$ is the most probable class according to the model output, for each set of perturbed copies of a unlabeled data point $U_i$. An uncertainty measure based on the mode of J predictions, introduced in this paper\cite{sadafi2019} is used for labeling the data points that the model is most uncertain about. The proposed uncertainty measure is:
+\subsection{Augmentations-based sampling}
+Let $\mathcal{A}$ be a function which performs stochastic data augmentations such as cropping, horizontal flipping, vertical flipping or erasing in case of an image (further details on $\mathcal{A}$ are provided in appendix). Each unlabeled data point $u_i\in\mathcal{U}$, is transformed using $\mathcal{A}$ and this process is repeated J times, to obtain $U_i = \{u_{1i}^{`}, u_{2i}^{`}, u^{`}_{3i}, ... u_{Ji}^{`}\}$. The random transformations are followed by a forward pass through the model $f^\Theta$ with parameters $\Theta$, which results in N predictions $\hat{Q}_i = \{\hat{q}_{1i}, \hat{q}_{2i}, \hat{q}_{3i} ... \hat{q}_{Ni}\}$ where $\hat{q}_i = argmax(P_\Theta(\hat{y}_i|x_i)$ is the most probable class according to the model output, for each set of perturbed copies of a unlabeled data point $U_i$. An uncertainty measure based on the mode of J predictions, introduced in this paper\cite{sadafi2019} is used for labeling the data points that the model is most uncertain about. The proposed uncertainty measure is:
 
 \begin{equation}
     \label{equation:augmentation_based_sampling}
@@ -138,38 +130,107 @@ where,
 \begin{itemize}[label={}]
   \setlength\itemsep{0em}
   \item $\delta_{i}$ represents the uncertainty measure of the $i^{th}$ data point
-  \item J is the size of set $U_i$ i.e. $|U_i| = N$
-  \item $\hat{q}_{ik}$ represents the prediction for the $k^{th}$ element of the set $U_i$
-  \item $M(\hat{Q}_i)$ represents the mode of the set $\hat{Q}_i$
+  \item J is the size of $U_i$ i.e. $|U_i| = J$
+  \item $\hat{q}_{ik}$ represents the prediction for the $k^{th}$ element of $U_i$
+  \item $M(\hat{Q}_i)$ represents the mode of $\hat{Q}_i$
   \item $\mathbb{1}$ is the indicator function, $\mathbb{1}(\hat{y}_{ik}, M(\hat{Q}_i)) = \begin{cases} 
       1 & if \quad \hat{y}_{ik} \neq M(\hat{Q}_i) \\
       0 & otherwise \\
    \end{cases}$
 \end{itemize}
 
-Hence, The model uncertainty $\delta$ can be estimated by keeping a count of the most frequently predicted class (mode) for each image. The idea behind this approach is that if the model is certain about an image then it should output the same prediction for randomly augmented versions. So the lower the frequency of the mode, the higher the uncertainty $\delta$ \cite{sadafi2019}. During each active learning iteration, the images with  the lowest frequency of the most frequently predicted class are annotated and added to the labeled set $\mathcal{L}$.
+Hence, The model uncertainty $\delta$ can be estimated by keeping a count of the most frequently predicted class (mode) for each image. The idea behind this approach is that if the model is certain about an image then it should output the same prediction for randomly augmented versions. So the lower the frequency of the mode, the higher the uncertainty $\delta$ \cite{sadafi2019}. During each active learning iteration, the images with  the lowest frequency of the most frequently predicted class are annotated and added to $\mathcal{L}$.
 
-\section{Semi-supervised Learning}\label{section:semi_supervised}
-Semi-supervised learning methods aim to exploit the information contained in the set $\mathcal{U}$
-\subsection{Wrapper methods}
-Wrapper methods one of the oldest known semi-supervised learning techniques\cite{van2020}. Wrapper methods involve training a base learner with the labeled set $\mathcal{L}$ as well as the unlabeled set $\mathcal{U}$, for which the labels are acquired through pseudo-labeling\cite{mclachlan1975}. The training process involves two steps: the base learner is trained on the labeled set as well as the pseudo-labeled set from previous iterations and then predictions ($\hat{y}$) are obtained on the unlabeled set. The unlabeled data points ($x \in \mathcal{U}$), for which the base learner outputs predictions with a high confidence are assigned the corresponding predicted label and added to training set as pseudo-labeled data for the next iteration. \\
-An advantage of wrapper methods is that, they can be added as a wrapper around the base learner. The base learner doesn't have to be modified and the pseudo-labeled data is processed as normal labeled data by the base learner.
+\section{Pre-training Methods}\label{section:pretraining_methods}
+Network initialization can increase the performance of neural networks \cite{hanin2018}. It is considered to be even more essential when the amount of annotated data is not considerably large \cite{holmberg2020}. In this thesis I utilize three different pre-training methods plus random initialization (baseline):
 
-\subsection{Feature Extraction}
-\subsubsection{Autoencoder\cite{kramer1991}}
-Traditional autoencoders are the most prominent example of neural networks used for feature extraction. The objective of the autoencoders is to reconstruct the input. An encoder network ($f^{\Theta_{enc}}$ with parameters $\Theta_{enc}$), encodes the input ($x$) into its latent representation i.e. $f^{\Theta_{enc}}(x)$. The encoder also includes a bottleneck layer, which contains relatively few nodes. The bottleneck layer forces the encoder to represent the input data in a compact form. The latent representation is used as an input to a decoder network ($f^{\Theta_{dec}}$ with parameters $\Theta_{dec}$), which tries to output a reconstruction ($f^{\Theta_{dec}}(f^{\Theta_{enc}}(x))$), of the original input. \\
-The autoencoders try to find a lower dimensional encoding of the input data. They are widely used for dimensionality reduction. Principal Component Analysis (PCA), is another dimensionality reduction technique which is restricted to linear maps. A linear autoencoder without any non-linear activation functions, spans the same subspace as PCA\cite{baldi1989}. Autoencoders work on the basis of the assumption that there are underlying substructures within the data which can be represented in the latent representation and they can be trained in an unsupervised manner. This allows the autoencoders to be used for semi-supervised learning.
+\subsection{Random initialization}
+Random initialization was shown to perform poorly compared to more sophisticated initialization measures \cite{glorot2010}. We use Kaiming He initialization \cite{he2015} as a baseline random initialization method. Kaiming He initialization, takes asymmetric activation function such as ReLU into account while weights initialization. It is shown\cite{he2015}, that the initialization methods, such as xavier initialization\cite{glorot2010} and Gaussian initialization, which do not take the asymmetric nature of activation function into account suffer from exploding or vanishing gradients problem. Consider forward propagation through a Neural Network:
+
+\begin{equation}
+    \label{equation:forward_pass}
+    Y_l = W_lX_l + B_l
+\end{equation}
+
+where,
+\begin{itemize}[label={}]
+  \setlength\itemsep{0em}
+  \item $l$ is the layer
+  \item $Y_l$ is the output of layer l before it goes through the activation function
+  \item $W_l$ is the weights matrix. The initialized elements in $W_l$ share the same distribution and are mutually independent
+  \item $X_l$ is the output of previous layer after it goes through the activation function i.e. $X_l = f(Y_{l-1})$. The elements in $X_l$ share the same distribution and are mutually independent
+  \item $B_l$ is the bias vector
+  \item $W_l$ and $X_l$ are mutually independent of each other
+\end{itemize}
+
+Taking variance of equation \ref{equation:forward_pass}, we get:
+
+\begin{equation}
+    \label{equation:variance_forward_pass}
+    Var[y_l] = n_l Var[w_lx_l]
+\end{equation}
+
+where,
+\begin{itemize}[label={}]
+  \setlength\itemsep{0em}
+  \item $n_l$ is the number of activations in layer l
+  \item $y_l$, $w_l$ and $x_l$ are the random variables of $Y_l$, $W_l$ and $X_l$ respectively
+\end{itemize}
+
+Assuming that the random variable $w_l$ has zero mean, we can further simplify equation \ref{equation:variance_forward_pass}:
+
+\begin{equation}
+    \label{equation:expectation_forward_pass}
+    Var[y_l] = n_l Var[w_l]\mathbf{E}[x_l^2]
+\end{equation}
+
+where,
+\begin{itemize}[label={}]
+  \setlength\itemsep{0em}
+  \item $\mathbf{E}$ refers to the expectation
+\end{itemize}
+
+Consider the ReLU activation i.e. $x_l = max(0, y_{l-1})$. If we let $w_{l-1}$ have a symmetric distribution around zero and $b_{l-1} = 0$ then $y_{l-1}$ will also be symmetric around zero and will have zero mean. This leads to $\mathbf{E}[x_l^2] = \frac{1}{2}Var[y_{l-1}]$, when the activation function is ReLU. Replacing the value of $\mathbf{E}[x_l^2]$ in equation \ref{equation:expectation_forward_pass}, we get:
+
+\begin{equation}
+    \label{equation:replaced_expectation_forward_pass}
+    Var[y_l] = \frac{1}{2}n_l Var[w_l]Var[y_{l-1}]
+\end{equation}
+
+Now we have a recurrence relation between the activations of layer l and l-1. So starting from the last layer O and continuing on till the first one, we get:
+
+\begin{equation}
+    \label{equation:final_layers_forward_pass}
+    Var[y_O] = Var[y_1] \left( \prod_{l=2}^{O} \frac{1}{2}n_l Var[w_l] \right)
+\end{equation}
+
+Hence, for a large number of layers, we see that if $\frac{1}{2}n_l Var[w_l]$ is greater than 1, then variance at the last layer O can be very large and if $\frac{1}{2}n_l Var[w_l]$ is less than 1, then the variance at the last layer O can be very small. Kaiming He initialization, aims to keep $\frac{1}{2}n_l Var[w_l] = 1$. To achieve this, Kaiming He initialization sets the weights of layer l to a zero-mean Gaussian distribution with a standard deviation of $\sqrt{\frac{2}{n_l}}$ and null biases.
+
+\subsection{ImageNet Weights}
+ImageNet weights are obtained by training a feature extraction network on the ImageNet dataset. After training on ImageNet data, the weights of the feature extractor network can be used for initialization of models which are to be trained on other datasets \cite{raghu2019}. This has become a standard pre-training for classification tasks as it often helps the network converge faster than with random initialization. It also has been shown to be beneficial in low-data biomedical imaging regimes \cite{raghu2019}. 
+
+\subsection{Autoencoder}
+Traditional autoencoders\cite{kramer1991} are the most prominent example of neural networks used for feature extraction. The objective of the autoencoders is to reconstruct the input. An encoder network $f^{\Theta_{enc}}$ with parameters $\Theta_{enc}$, encodes the input ($u_i$) into its latent representation i.e. $h_i = f^{\Theta_{enc}}(u_i)$. The encoder also includes a bottleneck layer, which contains relatively few nodes. The bottleneck layer forces the encoder to represent the input data in a compact form. The latent representation is used as an input to a decoder network $f^{\Theta_{dec}}$ with parameters $\Theta_{dec}$, which tries to output a reconstruction $f^{\Theta_{dec}}(f^{\Theta_{enc}}(u_i))$, of the original input. \\
+The autoencoders try to find a lower dimensional encoding of the input data. They are widely used for dimensionality reduction. Principal Component Analysis (PCA), is another dimensionality reduction technique which is restricted to linear maps. A linear autoencoder without any non-linear activation functions, spans the same subspace as PCA\cite{baldi1989}. Autoencoders work on the basis of the assumption that there are underlying substructures within the data which can be represented in the latent representation and they can be trained in an unsupervised manner. This allows the autoencoders to be used for pre-training.
 The objective function of autoencoders can be stated as:
 \begin{equation}
     \label{equation:autoencoders_loss}
-    L = \left\Vert x - f^{\Theta_{dec}}(f^{\Theta_{enc}}(x)) \right\Vert^2
+    Loss = \sum_{i}^{K} \left\Vert u_i - f^{\Theta_{dec}}(f^{\Theta_{enc}}(u_i)) \right\Vert^2
 \end{equation}
 
-\subsection{Perturbation Based}
-\subsubsection{A Simple Framework for Contrastive Learning of Visual Representations
-\cite{chen2020}}
-A Simple Framework for Contrastive Learning of Visual Representations (SimCLR), learns representations using a objective function which minimizes the difference between the representations of the model ($f^\Theta$ with parameters $\Theta$) on each pair of differently augmented copies of the same data point. \\
-Let $\mathcal{A}$ be a function which performs stochastic data augmentations (for details on the data augmentations refer to the SimCLR paper) on a given data point. Each data point $x, \forall x \in \mathcal{D}$ in a mini-batch of size $\mathcal{B}$, is passed through the stochastic data augmentations function $\mathcal{A}$ twice, to obtain $X_i = \{x_{1i}^{`}, x_{2i}^{`}\}$ with $\forall x_i^{`} \in X_i = \mathcal{A}(x_i)$. These pairs can be termed as positive pairs as they originate from the same data point. A neural network encoder ($f^{\Theta_{enc}}$ with parameters $\Theta_{enc}$), extracts the feature vectors from the augmented data points:
+where,
+\begin{itemize}[label={}]
+  \setlength\itemsep{0em}
+  \item $f^{\Theta_{enc}}$ is the encoder network
+  \item $f^{\Theta_{dec}}$ is the decoder network
+  \item K is the length of $\mathcal{U}$
+\end{itemize}
+
+Hence autoencoders do not require labels for training and the whole dataset can be used for training an autoencoder architecture. For pre-training the encoder is used as a feature extraction network while the decoder is generally discarded. This has been shown to significantly improve network initialization on biomedical image datasets \cite{ferreira2020}.
+
+\subsection{A Simple Framework for Contrastive Learning of Visual Representations}
+A Simple Framework for Contrastive Learning of Visual Representations (SimCLR), is a framework for contrastive learning of visual representations \cite{chen2020}. It learns representations in a self-supervised manner by using an objective function that minimizes the difference between representations of the model $f^{\Theta}$ with parameters $\Theta$ on a pairs of differently augmented copies of the same data point. \\
+Let $\mathcal{A}$ be a function which performs stochastic data augmentations (such as cropping, adding color jitter, horizontal flipping and gray scale) on a given data point. Each data point $x, \forall x \in \mathcal{D}$ in a mini-batch of size $\mathcal{B}$, is passed through the stochastic data augmentations function $\mathcal{A}$ twice, to obtain $X_i = \{x_{1i}^{`}, x_{2i}^{`}\}$ with $\forall x_i^{`} \in X_i = \mathcal{A}(x_i)$. These pairs can be termed as positive pairs as they originate from the same data point. A neural network encoder ($f^{\Theta_{enc}}$ with parameters $\Theta_{enc}$), extracts the feature vectors from the augmented data points:
 
 \begin{equation}
     \label{equation:simclr_encoder}
@@ -182,7 +243,7 @@ where,
   \item $h_k \in \mathbb{R}^{d}$ is the feature vector for $k^{th}$ data point
 \end{itemize}
 
-A multi-layer perceptron ($f^{\Theta_{MLP}}$ with parameters $\Theta_{MLP}$) with one hidden layer is used as a projection head for projecting the feature vectors h to projection space where the contrastive loss is applied. The authors show in the paper that applying contrastive loss in projection space is better than applying it in the feature space. The projections are obtained by:
+A multi-layer perceptron ($f^{\Theta_{MLP}}$ with parameters $\Theta_{MLP}$) with one hidden layer is used as a projection head for projecting the feature vectors h to projection space where the contrastive loss is applied. It is shown\cite{chen2020} that applying contrastive loss in projection space is better than applying it in the feature space. The projections are obtained by:
 
 \begin{equation}
     \label{equation:simclr_mlp}
@@ -215,10 +276,21 @@ where,
    \item The final loss value is obtained by computing it across all positive pairs i.e. (1i, 2i) and (2i, 1i).
 \end{itemize}
 
-\subsubsection{FixMatch: Simplifying Semi-Supervised Learning with Consistency and Confidence \cite{sohn2020}}
-FixMatch is a combination of two approaches in semi-supervised learning: consistency regularization\cite{sajjadi2016} and pseudo labeling\cite{mclachlan1975}. The main contribution of the authors is the combination of both concepts and using strong and weak augmentations for consistency regularization (for further details about the strong and weak augmentations, please refer to the FixMatch paper). \\
+\section{Training strategies}\label{section:training_strategies}
+Large amounts of unlabeled data are typically available in biomedical applications. Ideally, this unlabeled data is not only used for network initialization but also during training. Thus, we compare the performance of training the model only using the existing labeled data a.k.a. supervised learning versus a semi-supervised approach which incorporates the unlabeled data in the training process.
+
+\subsection{Supervised Learning}
+In supervised learning we are looking for a model $f^\Theta$ with parameters $\Theta$ to learn a mapping $\hat{Y} = f^\Theta(\mathcal{L})$ such that the objective function Loss $(\hat{y}_i, y_i)$ is minimized. Supervised learning uses only labeled data. The performance of the model can be evaluated using an evaluation metric $\mathcal{M}$ such as accuracy, recall etc. The objective function used in this paper is the multi-class cross-entropy loss function, $Loss = - \sum_{i}^{N} \sum_{j}^{C} y_{ij}log(\hat{y}_{ij})$ with C being the total number of classes in the dataset and N being the size of $\mathcal{L}$.
+
+
+\subsection{Pseudo-Labeling}
+Pseudo Labeling is considered to be a Wrapper method. Wrapper methods are one of the oldest known semi-supervised learning techniques\cite{van2020}. Wrapper methods involve training a base learner with $\mathcal{L}$ as well as $\mathcal{U}$, for which the labels are acquired through pseudo-labeling\cite{mclachlan1975}. The training process involves two steps: the base learner is trained on $\mathcal{L}$ as well as the pseudo-labeled set from previous iterations and then predictions ($\hat{y}$) are obtained on $\mathcal{U}$. The unlabeled data points ($x \in \mathcal{U}$), for which the base learner outputs predictions with a high confidence are assigned the corresponding predicted label and added to training set as pseudo-labeled data for the next iteration. \\
+An advantage of wrapper methods is that, they can be added as a wrapper around the base learner. The base learner doesn't have to be modified and the pseudo-labeled data is processed as normal labeled data by the base learner.
+
+\subsection{FixMatch: Simplifying Semi-Supervised Learning with Consistency and Confidence}
+FixMatch\cite{sohn2020} is a combination of two approaches in semi-supervised learning: consistency regularization\cite{sajjadi2016} and pseudo labeling\cite{mclachlan1975}. The main contribution of the authors is the combination of both concepts and using strong and weak augmentations for consistency regularization (for further details about the strong and weak augmentations, please refer to the FixMatch paper). \\
 Given the set of unlabeled data points $\mathcal{U} = \{u_1, u_2, u_3 ... u_K\}$ with $|U| = K$, consistency regularization tries to maximize the similarity between model ($f^\Theta$ with parameters $\Theta$) outputs, obtained by passing stochastically augmented versions of the same data point. \\
-Pseudo labeling refers to using artificial labels for unlabeled data points. The artificial labels are obtained by passing the unlabeled data points through the model ($f^\Theta$) i.e. $\hat{Y} = f^\Theta(\mathcal{U})$ and using the outcome $q$ with maximum probability in the predicted distribution i.e. $q_i = argmax(P_{\Theta}(y_i | x_i))$ as the artificial label, if the maximum probability value is above a threshold $\tau$. Using the artificial labels, the unlabeled data points are added to the set of labeled data points $\mathcal{L}$. Pseudo labeling uses the following loss function on the unlabeled data points:
+Pseudo labeling refers to using artificial labels for unlabeled data points. The artificial labels are obtained by passing the unlabeled data points through the model $f^\Theta$) i.e. $\hat{Y} = f^\Theta(\mathcal{U}$ and using the outcome $q$ with maximum probability in the predicted distribution i.e. $q_i = argmax(P_{\Theta}(y_i | x_i))$ as the artificial label, if the maximum probability value is above a threshold $\tau$. Using the artificial labels, the unlabeled data points are added to the set of labeled data points $\mathcal{L}$. Pseudo labeling uses the following loss function on the unlabeled data points:
 \begin{equation}
     \label{equation:fixmatch_pseudo_labeling_loss}
     L_{pseudo} = \frac{1}{K} \sum_{k=0}^{K} \mathbb{1}(max(P_{\Theta}(y_i | x_i)) \geq \tau) H(P_{\Theta}(\hat{y}_i | x_i), P_{\Theta}(y_i | x_i))
@@ -247,7 +319,7 @@ where,
   \item $\lambda$ is the weighting factor for the unsupervised loss term
 \end{itemize}
 
-The supervised loss is simply the cross entropy loss on the weakly augmented examples within the labeled set $\mathcal{L}$. $L_{supervised}$ is formulated as:
+The supervised loss is simply the cross entropy loss on the weakly augmented examples within $\mathcal{L}$. $L_{supervised}$ is formulated as:
 
 \begin{equation}
     \label{equation:fixmatch_supervised_loss}
