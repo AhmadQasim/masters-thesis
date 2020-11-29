@@ -1,23 +1,27 @@
 % !TeX root = ../main.tex
 % Add the above to each chapter to make compiling the PDF easier in some editors.
 
+% correct the language here
 \chapter{Experimentation}\label{chapter:experiments}
-In order to answer the questions raised in the introduction section, a grid search on the following components was carried out on each dataset.
+In this thesis for each experiment, 1\% of data is randomly selected as the initial annotated set. Then in each iteration 5\% of data is added as annotated, using the algorithms in section \ref{section:active_learning}. This process is repeated 4 times which leads to the addition of 20\% of data and in total 21\% of labeled data. Moreover, a 4-fold cross-validation is performed in each iteration and macro accuracy, precision, recall, and F1-score metrics are calculated. 
+
+ResNet18 \cite{he2016} is used as the fixed architecture for training. For each dataset, the ResNet18 is pretrained using an autoencoder or SimCLR \cite{chen2020}. For the autoencoder pretraining, a feature extractor network consisting of a ResNet18 encoder is used, with a decoder consisting of transposed convolutional layers. After training the autoencoder, the ResNet18 encoder is used as a feature extractor network while the decoder is discarded. 
+In order to answer the questions raised in the introduction section, a grid search on the following components is carried out on each dataset.
 
 \begin{table}[htbp]
 \captionsetup{format=plain}
 \centering
  \begin{tabular}{c c c} 
  \hline
- Model initialization & Training & Uncertainty Sampling \\ [0.5ex] 
+ Active learning algorithms & Pre-training methods & Training strategies \\ [0.5ex] 
  \hline
- Random & Supervised learning & Random Sampling \\ 
- ImageNet based\cite{deng2009} & Semi-supervised learning & Entropy-based \\
- Autoencoder based &  & Augmentation-based \\
- SimCLR based &  & MC-dropout \\
+ Random (baseline) & Random (baseline) & Supervised Learning \\ 
+ MC dropout & ImageNet & Semi-supervised Learning \\
+ Augmentation-based & Autoencoder & \\
+ Entropy-based & SimCLR & \\
  \hline
 \end{tabular}
-\caption{We compared the combination of active learning algorithms, different network pre-training methods and training strategies on 3 biomedical image datasets (\ref{fig:datasets_composition})}
+\caption{A combination of active learning algorithms, different network pre-training methods and training strategies is compared on 3 biomedical image datasets (\ref{fig:datasets_composition})}
 \label{table:experimental_grid}
 \end{table}
 
@@ -26,33 +30,32 @@ The main challenge for performing experiments was to implement a testing environ
 \section{Base parameters}\label{section:base_parameters}
 The following hyper-parameters are used for all datasets and methods:
 \begin{itemize}
-  \item \textbf{Architecture.} ResNet18\cite{he2016} architecture is used as a feature extractor network with a linear classification head on top. We use the standard pre-trained weights trained on the ImageNet\cite{deng2009} dataset for pre-trained transfer learning comparison.
-  \item \textbf{Training time.} After each active learning cycle, we train the network until the average recall per class (macro-recall) does not improve for 20 epochs.
+  \item \textbf{Architecture.} ResNet18\cite{he2016} architecture is used as a feature extractor network with a linear classification layer on top.
+  \item \textbf{Training time.} After each active learning cycle, the network is trained until the average recall per class (macro-recall) does not improve for 20 epochs.
   \item \textbf{Optimizer.} Adam\cite{kingma2014} is used as the optimizer with $\eta$(learning rate)=0.001, $\beta_1=0.9$, $\beta_2=0.999$ and no weight decay. Adam optimizer is easier to tune\cite{schneider2019}, which is important for testing a variety of methods.
   \item \textbf{Dropout.} The linear classification head consists of two linear layers with dropout layers in between. The dropout probability is 0.15.
   \item \textbf{Loss.} Weighted Cross Entropy loss is used for training all the methods except the FixMatch method which uses a modified cross entropy loss function. The weights are set according to the inverse class frequency.
-  \item \textbf{Unlabeled data subset.} In the Batchbald\cite{kirsch2019} paper, the authors show that many active learning methods tend to select similar points in the batch. This can cause them to perform worse than random sampling. To minimize this issue, before each active learning cycle only 30\% of the unlabeled data is used for acquisition of a batch. This makes it less probable for similar data points to be selected.
+  \item \textbf{Unlabeled data subset.} In Batchbald\cite{kirsch2019}, it is shown that many active learning methods tend to select similar points in the batch. This can cause them to perform worse than random sampling. To minimize this issue, before each active learning cycle only 30\% of the unlabeled data is used for acquisition of a batch. This makes it less probable for similar data points to be selected.
   \item \textbf{Batch Size.} A batch size of 128 is used for training as it is shown by Keskar et. al.\cite{keskar2016}, that using smaller batch size results in a more generalized model.
 \end{itemize}
 \section{Method-specific parameters}\label{section:method_specific_parameters}
 \begin{itemize}
-  \item \textbf{SimCLR.} As shown by the authors of SimCLR paper, using a larger batch size results in a lower error rate for downstream classification task, so a batch size of 1024 is used for SimCLR pretraining and the model is trained for 200 epochs. Other SimCLR specific parameters are: $\tau$ (temperature) $= 0.1$ and $\eta$ (learning rate) $= 0.001$.
+  \item \textbf{SimCLR.} As shown\cite{chen2020}, while training SimCLR, using a larger batch size results in a lower error rate for downstream classification task, so a batch size of 1024 is used for SimCLR pretraining and the model is trained for 200 epochs. Other SimCLR specific parameters are: $\tau$ (temperature) $= 0.1$ and $\eta$ (learning rate) $= 0.001$.
   \item \textbf{FixMatch.} Please refer to the paper for further details on the parameters specific to FixMatch. The parameters are: $\mu$ (unlabeled dataset size multiplier) $=8$, $\lambda$ (coefficient of the unlabeled loss) $=1$ and $\tau$ (pseudo labeling threshold) $=0.95$.
 \end{itemize}
 \section{Dataset-specific parameters}\label{section:dataset_specific_parameters}
-The Dataset specific parameters include: the number initial data points which are drawn randomly $n$, the number of data points which are added during each active learning cycle from the unlabeled dataset to labeled $b$, the size of labeled dataset after which further training is stopped $s$.
+The Dataset specific parameters include: the number initial data points which are drawn randomly $n$, the number of data points which are added during each active learning iteration from the unlabeled dataset to labeled $s$, the size of labeled dataset after which further training is stopped $z$.
 \vspace{0.5cm}
 \begin{table}[htbp]
 \captionsetup{format=plain}
 \centering
  \begin{tabular}{c c c c} 
  \hline
- Dataset & $n$ & $b$ & $s$ \\ [0.5ex] 
+ Dataset & $n$ & $s$ & $z$ \\ [0.5ex] 
  \hline
- Matek & 1\%\hspace{0.35cm}(147) & 4\%\hspace{0.35cm}(588) & 20\%\hspace{0.35cm}(2938) \\ 
- Jurkat & 1\%\hspace{0.35cm}(258) & \hspace{0.20cm}4\%\hspace{0.35cm}(1033) & 20\%\hspace{0.35cm}(5168) \\
- ISIC & 1\%\hspace{0.35cm}(203) & 4\%\hspace{0.35cm}(810) & 40\%\hspace{0.35cm}(8106) \\
- Plasmodium & 0.5\%\hspace{0.125cm}(110) & 0.5\%\hspace{0.125cm}(110) & 3.5\%\hspace{0.35cm}(661) \\
+ Matek & 1\%\hspace{0.35cm}(147) & 5\%\hspace{0.35cm}(588) & 20\%\hspace{0.35cm}(2938) \\ 
+ Jurkat & 1\%\hspace{0.35cm}(258) & \hspace{0.20cm}5\%\hspace{0.35cm}(1033) & 20\%\hspace{0.35cm}(5168) \\
+ ISIC & 1\%\hspace{0.35cm}(203) & 5\%\hspace{0.35cm}(810) & 40\%\hspace{0.35cm}(8106) \\
  \hline
 \end{tabular}
 \caption{Exact number of images being used for all datasets (\ref{fig:datasets_composition})}

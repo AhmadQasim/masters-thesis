@@ -2,13 +2,13 @@
 % Add the above to each chapter to make compiling the PDF easier in some editors.
 
 \chapter{Datasets}\label{chapter:datasets}
-We evaluate the efficiency and performance of combinations of active learning algorithms, pre-training methods, and training strategies on three fully annotated datasets from the biomedical imaging field (Figure \ref{fig:datasets_composition}).
+This thesis shows the performance of different active learning algorithms, pre-training methods and training strategies on three biomedical image datasets, as shown in Figure \ref{fig:datasets_composition}.
 
 \begin{figure}[htbp]
 \centering
 \captionsetup{format=plain}
 \includegraphics[width=0.95\textwidth]{figures/fig_datasets_composition.png}
-\caption{Biomedical image datasets used in this study are exhibiting strong class imbalance, little color variance and high similarity between classes. (A) White blood cell: A dataset with 18357 images (128x128 pixel) of white human blood cells with ten expert labeled classes from blood smears of 100 patients diagnosed with Acute Myeloid Leukemia (AML) and 100 individuals which show no symptoms of the disease \cite{matek2019, clark2013}. (B) Skin lesion: A dataset with 25339 dermoscopy images (128x128 pixel) of skin lesions with eight skin cancer classes \cite{codella2018, combalia2019, tschandl2018}. (C) Cell cycle: A dataset comprising 32272 images (64x64 pixel) of Jurkat cells in seven different cell cycle stages created by imaging flow cytometry \cite{eulenberg2017}.}
+\caption{The biomedical image datasets shown in this thesis have high class imbalance, low levels of contrast between different colors and a high level of similarity between different classes (A) White blood cell: This dataset contains 18357 (128x128) single-cell images. They are taken from peripheral blood smears of 100 patients diagnosed with AML, as well as 100 patients without any symptoms of the disease. \cite{matek2019, clark2013}. (B) Skin lesion: This dataset contains 25339 (128x128) images obtained using Dermoscopy. The images are classified into eight classes which specify different skin cancer types. \cite{codella2018, combalia2019, tschandl2018}. (C) Cell cycle: A dataset comprising 32272 images (64x64 pixel) of Jurkat cells in seven different cell cycle stages created by imaging flow cytometry \cite{eulenberg2017}.}
 \label{fig:datasets_composition}
 \end{figure}
 
@@ -17,12 +17,36 @@ We evaluate the efficiency and performance of combinations of active learning al
 % rework these sections to make them different from what it says on their websites
 \section{White Blood Cells}
 
-The Munich AML Morphology Dataset contains 18,365 expert-labeled single-cell images taken from peripheral blood smears of 100 patients diagnosed with Acute Myeloid Leukemia at Munich University Hospital between 2014 and 2017, as well as 100 patients without signs of hematological malignancy. Image acquisition was done using a M8 digital microscope / scanner (Precipoint GmbH, Freising, Germany) at 100-fold optical magnification and oil immersion. Pathological and non-pathological leukocytes were classified into a standard morphological classification scheme derived from clinical practice by trained experts. To quantify inter- and intra-rater variability of examiners, a subset of images was re-annotated up to two times. The dataset has been used by the authors to train a convolutional neural network for single-cell morphology classification.
+The White Blood Cells Dataset contains 18357 single-cell images labeled by experts taken from peripheral blood smears of 100 patients diagnosed with AML, as well as 100 patients without any symptoms of the disease. 
+
+White blood cells, also known as leukocytes or leucocytes, are the cells which protect the body from foreign objects and infections. White blood cells are found throughout the body including the blood.
+
+AML is a cancer occurring in the myeloid line of blood cells. Its symptoms include the rapid growth of abnormal cells which interfere with normal blood cells production due to a build-up in the bone marrow and the blood. Symptoms can include continuous feeling of tiredness, being out of breath frequently, and high risk of infection. At certain occasions, the cancer can metastasize and spread to other organs of the body. AML progresses quickly and can prove to be fatal in a matter of months. AML is initially treated using chemotherapy. The goal of chemotherapy is to set a remission in motion. Other treatments include radiation therapy or a stem cell transplant. The treatment is guided by the type of mutation present within the body. This also dictates, how long a person is likely to live.
+
+During the formulation of the dataset, the malignant and non-malignant white blood cells were classified into a standard morphological classification scheme. To quantify account of uncertainties between the expert labeling, a subset of images was re-annotated up to two times.
+
+The dataset has been used as the primary dataset for testing different active learning algorithms, training strategies and pre-training methods.
 
 \section{Skin Lesion}
 
-The International Skin Imaging Collaboration: Melanoma Project is an academia and industry partnership designed to facilitate the application of digital skin imaging to help reduce melanoma mortality. When recognized and treated in its earliest stages, melanoma is readily curable. Digital images of skin lesions can be used to educate professionals and the public in melanoma recognition as well as directly aid in the diagnosis of melanoma through teledermatology, clinical decision support, and automated diagnosis. Currently, a lack of standards for dermatologic imaging undermines the quality and usefulness of skin lesion imaging. ISIC is developing proposed standards to address the technologies, techniques, and terminology used in skin imaging with special attention to the issues of privacy and interoperability (i.e., the ability to share images across technology and clinical platforms). In addition, ISIC has developed and is expanding an open source public access archive of skin images to test and validate the proposed standards. This archive serves as a public resource of images for teaching and for the development and testing of automated diagnostic systems
+The Skin Lesion dataset is developed by The International Skin Imaging Collaboration (ISIC): Melanoma project. The goal of the melanoma project is the application of medical imaging using computational technologies for detection of melanoma and eventually the reduction of melanoma mortality.
+
+Melanoma, also called malignant melanoma, is a type of skin cancer. It is developed within the melanocytes cells. Melanocytes are responsible for producing pigments in the skin. Melanomas can also occur in other organs such as the mouth, intestines and the eye. About 25\% of melanomas develop from moles. Symptoms such as increase in the size of a mole, irregular edges, color changes, itchiness or skin breakdown can indicate melanoma.
+
+Melanoma treatment heavily depends on early detection. If detected in its early stages, Melanoma is readily curable. Skin lesion imaging can not only help with the education of experts and the public but it can also be used for automated diagnosis, decision support in clinics and teledermatology. The quality of skin lesion imaging is hampered by a lack of dermatological standards. ISIC is working towards addressing the technologies, techniques and terminology used in skin imaging while focusing on the issues of privacy.
+
+ISIC has developed and is expanding an open source public access archive of skin images to test and validate the proposed standards. This archive consists of 25339 images for the development and testing of automated diagnostic systems.
+
+Skin lesion dataset is used in this thesis to test the best performing combinations of active learning algorithms, training strategies and pre-training methods for White blood cells dataset.
 
 \section{Cell Cycle}
 
-Images of 32,266 asynchronously growing Jurkat cells were captured with the ImageStream platform. The cells were fixed and stained with PI (propidium iodide) to quantify DNA content and a MPM2 (mitotic protein monoclonal) antibody to identify mitotic cells.
+The Cell cycle dataset consists of 32272 images of Jurkat cells which are growing in an asynchronous manner. The cells are captured with the ImageStream platform. The cells were fixed and then stained with Propidium Iodide to determine the DNA content of the cells. Mitotic Protein Monoclonal antibody were used to identify mitotic cells.
+
+Jurkat cells are an immortalized line of human T lymphocyte cells. They are used to study various biological process related to T lymphocyte cells. In particular, Jurkat cells can generate interleukin 2, and hence can be used for studying the vulnerability of cancer to various drugs and treatment options.
+
+The images of the Jurkat cells in the Cell cycle dataset are labeled into the seven different phases which occur within a cell cycle.
+
+The cell cycle consists of four distinct phases: G1 phase, S phase (synthesis), G2 phase (collectively known as Interphase) and M phase (mitosis and cytokinesis). The M phase is further composed of four stages i.e. Prophase, Metaphase, Anaphase, and Telophase.
+
+Differences in the rates of cellular division and differences in the amount of time spent in each stage of cellular division are important biomarkers for distinguishing between healthy and cancerous cells. Likewise, cancer cells can form malignant mitotic structures which can result in progression of the disease. 
