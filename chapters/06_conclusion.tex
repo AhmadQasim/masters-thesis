@@ -1,6 +1,7 @@
 % !TeX root = ../main.tex
 % Add the above to each chapter to make compiling the PDF easier in some editors.
 
+% TODO: I have to rework the conclusion yet, to make it different from the paper
 \chapter{Conclusion}\label{chapter:conclusion}
 
 In this thesis, the performance of different annotation-efficient learning strategies, is investigated for biomedical image classification. First, it is shown that for classifying white blood cells into 10 different classes, active learning can boost macro recall. Second, it is shown that using ImageNet and SimCLR pre-training can increase the performance further. However, their contribution is dataset dependent: While for white blood cell and skin lesion dataset, ImageNet weight led to better performance, SimCLR performed better for classifying cell cycles (Figure 3). This might be due to the nature of images: Cell cycle data is captured by fluorescent imaging which follows a very different color distribution than other technologies such as dermoscopy cameras, which are closer to natural images. Therefore, ImageNet pre-training might not be the preferred way for such data.
@@ -10,6 +11,7 @@ As a result of this study, an annotation-efficient strategy is proposed for biom
 
 Although this thesis shows potential for improvement of annotation-efficient learning for three biomedical image classification datasets, the methodology should be tested on more datasets to gain insights into correlations between dataset characteristics and the performance of the applied methods. Due to the computational costs a fixed architecture is used with a fixed set of parameters. As the next step, different architectures will be tried with different parameters and the results will be evaluated accordingly. Also, a variety of active learning, semi-supervised and self-supervised learning methods should be added to the work to find the optimal strategy. Finally, to make the findings relevant to the biomedical deep learning field, implementations of the combined methods that allow for quick and easy application need to be provided in an open source implementation.
 
+% Also remake this figure
 \begin{figure}[htbp]
 \centering
 \captionsetup{format=plain}
