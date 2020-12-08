@@ -8,12 +8,13 @@
 \usepackage[%
   backend=biber,
   url=false,
-  style=alphabetic,
+  style=ieee,
   maxnames=4,
   minnames=3,
   maxbibnames=99,
   giveninits,
-  uniquename=init]{biblatex} % TODO: adapt citation style
+  uniquename=init,
+  citestyle=numeric]{biblatex} % TODO: adapt citation style
 \usepackage{graphicx}
 \usepackage{scrhack} % necessary for listings package
 \usepackage{listings}
@@ -68,3 +69,8 @@
   keywordstyle=\bfseries\color{TUMBlue},
   stringstyle=\color{TUMAccentGreen}
 }
+
+\usepackage{makecell}
+\renewcommand\theadalign{bc}
+
+\usepackage{rotating}

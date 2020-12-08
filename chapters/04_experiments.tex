@@ -2,10 +2,10 @@
 % Add the above to each chapter to make compiling the PDF easier in some editors.
 
 % correct the language here
-\chapter{Experimentation}\label{chapter:experiments}
-In this thesis for each experiment, 1\% of data is randomly selected as the initial annotated set. Then in each iteration 5\% of data is added as annotated, using the algorithms in section \ref{section:active_learning}. This process is repeated 4 times which leads to the addition of 20\% of data and in total 21\% of labeled data. Moreover, a 4-fold cross-validation is performed in each iteration and macro accuracy, precision, recall, and F1-score metrics are calculated. 
+\chapter{Experiments}\label{chapter:experiments}
+In this thesis for each experiment, 1\% of data is randomly selected as the initial labeled set. Then in each iteration 5\% of data is labeled, using the algorithms in section \ref{section:active_learning}. This process is repeated 4 times which leads to the addition of 20\% of data and in total 21\% of labeled data. Moreover, a 4-fold cross-validation is performed in each iteration and macro accuracy, precision, recall, and F1-score metrics are calculated. 
 
-ResNet18 \cite{he2016} is used as the fixed architecture for training. For each dataset, the ResNet18 is pretrained using an autoencoder or SimCLR \cite{chen2020}. For the autoencoder pretraining, a feature extractor network consisting of a ResNet18 encoder is used, with a decoder consisting of transposed convolutional layers. After training the autoencoder, the ResNet18 encoder is used as a feature extractor network while the decoder is discarded. 
+ResNet18 \cite{he2016} is used as the fixed architecture for training. For each dataset, the ResNet18 is pre-trained using an autoencoder or SimCLR \cite{chen2020}. For the autoencoder pre-training, a feature extractor network consisting of a ResNet18 encoder is used, with a decoder consisting of transposed convolutional layers. After training the autoencoder, the ResNet18 encoder is used as a feature extractor network while the decoder is discarded. 
 In order to answer the questions raised in the introduction section, a grid search on the following components is carried out on each dataset.
 
 \begin{table}[htbp]
@@ -16,35 +16,35 @@ In order to answer the questions raised in the introduction section, a grid sear
  Active learning algorithms & Pre-training methods & Training strategies \\ [0.5ex] 
  \hline
  Random (baseline) & Random (baseline) & Supervised Learning \\ 
- MC dropout & ImageNet & Semi-supervised Learning \\
+ MC-dropout & ImageNet & Semi-supervised Learning \\
  Augmentation-based & Autoencoder & \\
  Entropy-based & SimCLR & \\
  \hline
 \end{tabular}
-\caption{A combination of active learning algorithms, different network pre-training methods and training strategies is compared on 3 biomedical image datasets (\ref{fig:datasets_composition})}
+\caption[Experimentation Setup]{A combination of active learning algorithms, different network pre-training methods and training strategies is compared on 3 biomedical image datasets (\ref{fig:datasets_composition})}
 \label{table:experimental_grid}
 \end{table}
 
 The main challenge for performing experiments was to implement a testing environment which is not biased towards any one of the methods being tested. It is not computationally feasible to perform a grid search over all hyper-parameters for all methods. This chapter is divided in three sections: section \ref{section:base_parameters}, which lists the hyper-parameters which stay the same, independent of the dataset and method being tested, section \ref{section:method_specific_parameters}, which lists the hyper-parameters specific to a method and section \ref{section:dataset_specific_parameters}, which lists the hyper-parameters specific to a dataset.
 
-\section{Base parameters}\label{section:base_parameters}
+\section{Base Parameters}\label{section:base_parameters}
 The following hyper-parameters are used for all datasets and methods:
 \begin{itemize}
-  \item \textbf{Architecture.} ResNet18\cite{he2016} architecture is used as a feature extractor network with a linear classification layer on top.
+  \item \textbf{Architecture.} ResNet18 \cite{he2016} architecture is used as a feature extractor network with a linear classification layer on top.
   \item \textbf{Training time.} After each active learning cycle, the network is trained until the average recall per class (macro-recall) does not improve for 20 epochs.
-  \item \textbf{Optimizer.} Adam\cite{kingma2014} is used as the optimizer with $\eta$(learning rate)=0.001, $\beta_1=0.9$, $\beta_2=0.999$ and no weight decay. Adam optimizer is easier to tune\cite{schneider2019}, which is important for testing a variety of methods.
+  \item \textbf{Optimizer.} Adam \cite{kingma2014} is used as the optimizer with $\eta$(learning rate)=0.001, $\beta_1=0.9$, $\beta_2=0.999$ and no weight decay. Adam optimizer is easier to tune \cite{schneider2019}, which is important for testing a variety of methods.
   \item \textbf{Dropout.} The linear classification head consists of two linear layers with dropout layers in between. The dropout probability is 0.15.
   \item \textbf{Loss.} Weighted Cross Entropy loss is used for training all the methods except the FixMatch method which uses a modified cross entropy loss function. The weights are set according to the inverse class frequency.
-  \item \textbf{Unlabeled data subset.} In Batchbald\cite{kirsch2019}, it is shown that many active learning methods tend to select similar points in the batch. This can cause them to perform worse than random sampling. To minimize this issue, before each active learning cycle only 30\% of the unlabeled data is used for acquisition of a batch. This makes it less probable for similar data points to be selected.
-  \item \textbf{Batch Size.} A batch size of 128 is used for training as it is shown by Keskar et. al.\cite{keskar2016}, that using smaller batch size results in a more generalized model.
+  \item \textbf{Unlabeled data subset.} In Batchbald \cite{kirsch2019}, it is shown that many active learning methods tend to select similar points in the batch. This can cause them to perform worse than random sampling. To minimize this issue, before each active learning cycle only 30\% of the unlabeled data is used for acquisition of a batch. This makes it less probable for similar images to be selected.
+  \item \textbf{Batch Size.} A batch size of 128 is used for training as it is shown by Keskar et. al. \cite{keskar2016}, that using smaller batch size results in a more generalized model.
 \end{itemize}
-\section{Method-specific parameters}\label{section:method_specific_parameters}
+\section{Method-specific Parameters}\label{section:method_specific_parameters}
 \begin{itemize}
-  \item \textbf{SimCLR.} As shown\cite{chen2020}, while training SimCLR, using a larger batch size results in a lower error rate for downstream classification task, so a batch size of 1024 is used for SimCLR pretraining and the model is trained for 200 epochs. Other SimCLR specific parameters are: $\tau$ (temperature) $= 0.1$ and $\eta$ (learning rate) $= 0.001$.
+  \item \textbf{SimCLR.} As shown \cite{chen2020}, while training SimCLR, using a larger batch size results in a lower error rate for downstream classification task, so a batch size of 1024 is used for SimCLR pre-training and the model is trained for 200 epochs. Other SimCLR specific parameters are: $\tau$ (temperature) $= 0.1$ and $\eta$ (learning rate) $= 0.001$.
   \item \textbf{FixMatch.} Please refer to the paper for further details on the parameters specific to FixMatch. The parameters are: $\mu$ (unlabeled dataset size multiplier) $=8$, $\lambda$ (coefficient of the unlabeled loss) $=1$ and $\tau$ (pseudo labeling threshold) $=0.95$.
 \end{itemize}
-\section{Dataset-specific parameters}\label{section:dataset_specific_parameters}
-The Dataset specific parameters include: the number initial data points which are drawn randomly $n$, the number of data points which are added during each active learning iteration from the unlabeled dataset to labeled $s$, the size of labeled dataset after which further training is stopped $z$.
+\section{Dataset-specific Parameters}\label{section:dataset_specific_parameters}
+The Dataset specific parameters include: the number initial images which are drawn randomly $n$, the number of images which are added during each active learning iteration from the unlabeled dataset to labeled $s$, the size of labeled dataset after which further training is stopped $z$.
 \vspace{0.5cm}
 \begin{table}[htbp]
 \captionsetup{format=plain}
@@ -55,9 +55,12 @@ The Dataset specific parameters include: the number initial data points which ar
  \hline
  Matek & 1\%\hspace{0.35cm}(147) & 5\%\hspace{0.35cm}(588) & 20\%\hspace{0.35cm}(2938) \\ 
  Jurkat & 1\%\hspace{0.35cm}(258) & \hspace{0.20cm}5\%\hspace{0.35cm}(1033) & 20\%\hspace{0.35cm}(5168) \\
- ISIC & 1\%\hspace{0.35cm}(203) & 5\%\hspace{0.35cm}(810) & 40\%\hspace{0.35cm}(8106) \\
+ ISIC & 1\%\hspace{0.35cm}(203) & 5\%\hspace{0.35cm}(810) & 20\%\hspace{0.35cm}(8106) \\
  \hline
 \end{tabular}
 \caption{Exact number of images being used for all datasets (\ref{fig:datasets_composition})}
 \label{table:datasets_splits}
 \end{table}
+
+\section{Evaluation Metrics}\label{section:evaluation_metrics}
+We use macro recall, macro f1-score, accuracy and macro precision as metrics for measuring the performance of the models. Macro recall is prioritized over precision and f1-score as precision focuses on true positives (TPs) and false positives (FPs). In case of the majority classes, the model tends to predict the minority class images as majority ones, which results in an increase in the number of FPs but the overall number of minority class images is so low that even if the model predicts all minority class images as majority ones, the resulting precision value is close to one. In case of minority classes, the number of FPs are low because the model do not tend to predict majority class images as minority classes, hence the precision value is close to one. Hence, precision does not give us a lot of information. Recall focuses on TPs and false negatives (FNs). FNs are important in the context of minority class classification. F1-score is a combination of recall and precision but as precision does not add a lot of information in the context of biomedical datasets being used in this study, recall is preferred over precision and f1-score. All of the metrics, which include macro recall, macro f1-score, accuracy and macro precision, are shown in the format of mean$\pm$standard deviation from 4-fold cross-validation. 
